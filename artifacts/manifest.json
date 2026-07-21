@@ -1,0 +1,39 @@
+{
+  "versions": {
+    "scikit-learn": "1.9.0",
+    "pandas": "3.0.3",
+    "numpy": "2.5.1",
+    "xgboost": "3.3.0"
+  },
+  "random_state": 42,
+  "raw_input_sha256": {
+    "training-set.csv": "bec7dd5ec88dc2a0",
+    "testing-set.csv": "734fe6642edf758f"
+  },
+  "artifacts": {
+    "preprocess_linear": {
+      "n_features_out": 86,
+      "ttl_included": false,
+      "serves": "LogisticRegression + NeuralNet",
+      "primary": true
+    },
+    "preprocess_linear_with_ttl": {
+      "n_features_out": 89,
+      "ttl_included": true,
+      "serves": "LogisticRegression + NeuralNet",
+      "primary": false
+    },
+    "preprocess_tree": {
+      "n_features_out": 39,
+      "ttl_included": false,
+      "serves": "RandomForest + XGBoost",
+      "primary": true
+    },
+    "preprocess_tree_with_ttl": {
+      "n_features_out": 42,
+      "ttl_included": true,
+      "serves": "RandomForest + XGBoost",
+      "primary": false
+    }
+  }
+}

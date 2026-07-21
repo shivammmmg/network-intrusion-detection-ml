@@ -1,0 +1,71 @@
+{
+  "raw_train_rows": 175341,
+  "raw_test_rows": 82332,
+  "is_ftp_login_max_before_clamp": 4,
+  "train_within_duplicates_removed": 67601,
+  "train_rows_also_in_test_removed": 1722,
+  "train_rows_after_dedup_and_overlap_removal": 106018,
+  "splits": {
+    "train": {
+      "n": 84814,
+      "normal_pct": 0.4857,
+      "attack_pct": 0.5143
+    },
+    "val": {
+      "n": 21204,
+      "normal_pct": 0.4857,
+      "attack_pct": 0.5143
+    },
+    "test": {
+      "n": 82332,
+      "normal_pct": 0.4494,
+      "attack_pct": 0.5506
+    }
+  },
+  "random_state": 42,
+  "val_fraction": 0.2,
+  "feature_columns": [
+    "dur",
+    "proto",
+    "service",
+    "state",
+    "spkts",
+    "dpkts",
+    "sbytes",
+    "dbytes",
+    "rate",
+    "sttl",
+    "dttl",
+    "sload",
+    "dload",
+    "sloss",
+    "dloss",
+    "sinpkt",
+    "dinpkt",
+    "sjit",
+    "djit",
+    "swin",
+    "stcpb",
+    "dtcpb",
+    "dwin",
+    "tcprtt",
+    "synack",
+    "ackdat",
+    "smean",
+    "dmean",
+    "trans_depth",
+    "response_body_len",
+    "ct_srv_src",
+    "ct_state_ttl",
+    "ct_dst_ltm",
+    "ct_src_dport_ltm",
+    "ct_dst_sport_ltm",
+    "ct_dst_src_ltm",
+    "is_ftp_login",
+    "ct_ftp_cmd",
+    "ct_flw_http_mthd",
+    "ct_src_ltm",
+    "ct_srv_dst",
+    "is_sm_ips_ports"
+  ]
+}

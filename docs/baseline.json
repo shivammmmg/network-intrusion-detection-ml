@@ -1,0 +1,34 @@
+{
+  "most_frequent": {
+    "val": {
+      "accuracy": 0.5143,
+      "precision": 0.5143,
+      "recall": 1.0,
+      "f1": 0.6792,
+      "pr_auc": 0.5143
+    },
+    "test": {
+      "accuracy": 0.5506,
+      "precision": 0.5506,
+      "recall": 1.0,
+      "f1": 0.7102,
+      "pr_auc": 0.5506
+    }
+  },
+  "stratified": {
+    "val": {
+      "accuracy": 0.4968,
+      "precision": 0.5107,
+      "recall": 0.5127,
+      "f1": 0.5117,
+      "pr_auc": 0.5125
+    },
+    "test": {
+      "accuracy": 0.5013,
+      "precision": 0.5505,
+      "recall": 0.5135,
+      "f1": 0.5313,
+      "pr_auc": 0.5505
+    }
+  }
+}
