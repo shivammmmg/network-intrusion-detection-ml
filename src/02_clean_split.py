@@ -4,8 +4,9 @@
 
 Steps (each one shows up in the data card):
   1. Clean both files (constant fixes, safe to apply the same way everywhere).
-  2. Drop exact duplicate records from train. Train is ~39% duplicates, and if
-     copies straddle the train/val split they inflate the validation score.
+  2. For the binary task, collapse repeated predictor vectors with the same
+     label, regardless of attack_cat. Remove predictor vectors that occur with
+     both binary labels because they are inherently ambiguous.
   3. Drop train rows whose predictor features also appear in test. Test is the
      frozen hold-out; we don't touch it, but we do delete its twins from train so
      the model can't memorize a feature pattern it'll be scored on.
@@ -36,26 +37,60 @@ report["raw_test_rows"] = int(len(test_raw))
 # Did is_ftp_login actually have stray >1 values? Record the pre-clamp max.
 report["is_ftp_login_max_before_clamp"] = int(read_raw(RAW_TRAIN_CSV)["is_ftp_login"].max())
 
-# Two different keys:
-# dedup_cols = everything except id. A duplicate means the whole record matches,
-# label included, so label stays in this key.
-# predictor_cols = model inputs only (no id, attack_cat, label). Used for the
-# test-overlap check: if a train row's features match a test row, the model can
-# memorize a pattern it'll be scored on, even if the two rows have different
-# labels (which does happen here). So label must NOT be in this key.
-dedup_cols = [c for c in train_raw.columns if c != "id"]
+# The binary-task deduplication key is the model input vector plus the binary
+# label. attack_cat is deliberately excluded: it is dropped from X and must not
+# let otherwise identical binary examples survive as separate records.
 predictor_cols = [c for c in train_raw.columns if c not in DROP_COLS + [TARGET]]
+dedup_cols = predictor_cols + [TARGET]
+
+# The test-overlap key is the same predictor-only list. If a train row's features
+# match a test row, the model can memorize a pattern it will later be scored on,
+# even if the two copies have different labels. Test labels are never used for
+# cleaning.
 
 before = len(train_raw)
 train_dedup = train_raw.drop_duplicates(subset=dedup_cols, keep="first").copy()
-report["train_within_duplicates_removed"] = int(before - len(train_dedup))
+same_label_duplicates_removed = int(before - len(train_dedup))
+
+# A predictor vector mapping to both binary labels is ambiguous. Remove every
+# remaining row for such a vector before the train/validation split rather than
+# silently choosing one label or allowing the vector to straddle the split.
+label_counts_by_predictor = train_dedup.groupby(
+    predictor_cols, sort=False, dropna=False
+)[TARGET].nunique()
+ambiguous_predictors = label_counts_by_predictor[label_counts_by_predictor > 1].index
+dedup_index = train_dedup.set_index(predictor_cols).index
+ambiguous_mask = dedup_index.isin(ambiguous_predictors)
+ambiguous_vectors_removed = int(len(ambiguous_predictors))
+ambiguous_rows_removed = int(ambiguous_mask.sum())
+train_unambiguous = train_dedup.loc[~ambiguous_mask].copy()
+
+report["train_same_label_duplicate_rows_removed"] = same_label_duplicates_removed
+report["train_conflicting_predictor_vectors_removed"] = ambiguous_vectors_removed
+report["train_conflicting_predictor_rows_removed"] = ambiguous_rows_removed
+report["deduplication"] = {
+    "key": dedup_cols,
+    "predictor_columns": predictor_cols,
+    "excluded_from_key": ["id", "attack_cat"],
+    "same_label_duplicate_rows_removed": same_label_duplicates_removed,
+    "conflicting_predictor_vectors_removed": ambiguous_vectors_removed,
+    "conflicting_predictor_rows_removed": ambiguous_rows_removed,
+}
 
 # Left-merge on predictor features; drop any train row that finds a test match.
 test_keys = test_raw[predictor_cols].drop_duplicates()
-merged = train_dedup.merge(test_keys, on=predictor_cols, how="left", indicator=True)
+train_unambiguous = train_unambiguous.copy()
+train_unambiguous["_source_row"] = range(len(train_unambiguous))
+merged = train_unambiguous.merge(test_keys, on=predictor_cols, how="left", indicator=True)
 overlap_mask = merged["_merge"].to_numpy() == "both"
-report["train_rows_also_in_test_removed"] = int(overlap_mask.sum())
-train_clean = train_dedup.loc[~overlap_mask].reset_index(drop=True)
+overlap_source_rows = merged.loc[overlap_mask, "_source_row"]
+report["train_rows_also_in_test_removed"] = int(overlap_source_rows.nunique())
+train_clean = train_unambiguous.loc[
+    ~train_unambiguous["_source_row"].isin(overlap_source_rows),
+].drop(columns="_source_row").reset_index(drop=True)
+
+if train_clean.duplicated(subset=predictor_cols).any():
+    raise RuntimeError("Predictor duplicates remain before train/validation split")
 report["train_rows_after_dedup_and_overlap_removal"] = int(len(train_clean))
 
 X_all, y_all = make_xy(train_clean)
@@ -92,9 +127,12 @@ report["feature_columns"] = list(X_train.columns)
 (DOCS_DIR / "split-manifest.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
 
 print("=== clean + split done ===")
-for k in ["raw_train_rows", "train_within_duplicates_removed",
-          "train_rows_also_in_test_removed", "train_rows_after_dedup_and_overlap_removal",
-          "is_ftp_login_max_before_clamp"]:
-    print(f"  {k}: {report[k]}")
+for k in ["raw_train_rows", "train_rows_also_in_test_removed",
+          "train_rows_after_dedup_and_overlap_removal", "is_ftp_login_max_before_clamp"]:
+    if k in report:
+        print(f"  {k}: {report[k]}")
+print(f"  train_same_label_duplicate_rows_removed: {report['train_same_label_duplicate_rows_removed']}")
+print(f"  train_conflicting_predictor_vectors_removed: {report['train_conflicting_predictor_vectors_removed']}")
+print(f"  train_conflicting_predictor_rows_removed: {report['train_conflicting_predictor_rows_removed']}")
 print("  splits:", json.dumps(report["splits"]))
 print(f"[written] {PROCESSED_DIR}/*.parquet  +  {DOCS_DIR/'split-manifest.json'}")
