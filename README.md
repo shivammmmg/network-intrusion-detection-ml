@@ -70,7 +70,8 @@ The project deliberately handles several UNSW-NB15 issues:
 
 - `id` is removed because it is a row identifier.
 - `attack_cat` is removed because it reveals the binary target.
-- Exact duplicates are removed from training data.
+- Same-label predictor duplicates are removed from the binary development pool;
+  predictor vectors with conflicting binary labels are removed explicitly.
 - Training rows whose predictor values occur in the test set are removed from
   training data; the test set itself remains untouched.
 - Preprocessing is fit on `X_train` only. Validation and test data are
@@ -83,11 +84,14 @@ The project deliberately handles several UNSW-NB15 issues:
 
 | Split | Rows | Normal | Attack |
 |---|---:|---:|---:|
-| Train | 84,814 | 48.6% | 51.4% |
-| Validation | 21,204 | 48.6% | 51.4% |
+| Train | 79,685 | 51.6% | 48.4% |
+| Validation | 19,922 | 51.6% | 48.4% |
 | Test (frozen) | 82,332 | 44.9% | 55.1% |
 
 The validation split is a stratified 20% slice of the cleaned training data.
+The GitHub Issue #1 fix removes predictor vectors with conflicting binary labels
+before the split, so no complete predictor vector can appear in both train and
+validation.
 
 ## Quick start
 
@@ -149,9 +153,10 @@ y_val = pd.read_parquet("data/processed/y_val.parquet")["label"]
 | Random Forest / XGBoost | `artifacts/preprocess_tree.joblib` | median imputation, ordinal categorical encoding |
 | TTL ablation only | `artifacts/preprocess_*_with_ttl.joblib` | Same as above, with TTL features included |
 
-The primary linear artifact produces 86 features; the primary tree artifact
-produces 39. The artifact loader treats a scikit-learn version mismatch as an
-error to prevent silent preprocessing differences.
+The corrected primary linear artifact produces 66 features and the primary tree
+artifact produces 39. The TTL-included variants produce 69 and 42 respectively.
+The artifact loader treats a scikit-learn version mismatch as an error to prevent
+silent preprocessing differences.
 
 ## Evaluation
 
@@ -176,13 +181,14 @@ accuracy alone.
 
 ### Existing baseline
 
-The current baseline uses `DummyClassifier`. For the most-frequent strategy,
-which predicts the attack class for every example:
+The current baseline uses `DummyClassifier`. After the [Issue #1](https://github.com/shivammmmg/network-intrusion-detection-ml/issues/1) split fix, the
+most-frequent strategy predicts the normal class because the development pool is
+51.6% normal:
 
 | Split | Accuracy | Precision | Recall | F1 | PR-AUC |
 |---|---:|---:|---:|---:|---:|
-| Validation | 0.5143 | 0.5143 | 1.0000 | 0.6792 | 0.5143 |
-| Test | 0.5506 | 0.5506 | 1.0000 | 0.7102 | 0.5506 |
+| Validation | 0.5157 | 0.0000 | 0.0000 | 0.0000 | 0.4843 |
+| Test | 0.4494 | 0.0000 | 0.0000 | 0.0000 | 0.5506 |
 
 See [`docs/baseline.md`](docs/baseline.md) for both baseline strategies. A
 trained model should exceed these baselines on F1 and PR-AUC, not simply on

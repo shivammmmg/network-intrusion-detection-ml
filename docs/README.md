@@ -40,10 +40,13 @@ the exact versions with `pip install -r requirements.txt` in a fresh venv.
 ## A few rules so our numbers line up
 Use the split that's already here. If everyone makes their own split with
 `train_test_split` we end up with different test sets and can't compare numbers.
+The binary split applies the GitHub Issue #1 fix: deduplication uses all model
+predictors plus `label`, excludes `attack_cat`, and removes predictor vectors
+that map to both labels before splitting.
 `X_test` is frozen: score on it once, at the very end, no tuning against it.
 Report precision/recall/F1/PR-AUC per split, not raw accuracy, because train
-(51% attack) and test (55%) don't have the same attack rate. Beat the baseline in
-`docs/baseline.md` (always-guess-attack gets F1 0.71) on F1/PR-AUC.
+(48.4% attack) and test (55.1%) don't have the same attack rate. Beat the
+baselines in `docs/baseline.md` on F1/PR-AUC.
 
 On TTL: the main artifacts leave the TTL features out on purpose. The `*_with_ttl`
 ones are only for the ablation section, since `sttl` alone scores 92% and that's a

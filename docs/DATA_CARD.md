@@ -16,13 +16,13 @@ and the 2016 Information Security Journal paper. Task is binary: `label` 0 = nor
 |---|--:|--:|--:|
 | Raw train | 175,341 | 31.9% | 68.1% |
 | Raw test | 82,332 | 44.9% | 55.1% |
-| Processed train | 84,814 | 48.6% | 51.4% |
-| Processed val | 21,204 | 48.6% | 51.4% |
+| Processed train | 79,685 | 51.6% | 48.4% |
+| Processed val | 19,922 | 51.6% | 48.4% |
 | Processed test (frozen) | 82,332 | 44.9% | 55.1% |
 
-The raw train and test files don't have the same attack rate (68% vs 55%). De-dup
-(below) closed most of that gap: a lot of the raw 68% was duplicated rows, and
-once those go, train sits at 51.4% attack, much nearer test.
+The raw train and test files don't have the same attack rate (68% vs 55%). The
+binary predictor/label deduplication and ambiguous-vector removal reduce the
+development pool to 48.4% attack, while the frozen test remains 55.1% attack.
 
 ## Feature roles (42 predictors after drops)
 Three text columns: `proto` (133 levels, long tail), `service` (13, and `-` means
@@ -52,17 +52,20 @@ We keep the columns but the main artifacts leave them out, and the number we
 report is the without-TTL one. The `*_with_ttl` artifacts exist only to show how
 much they inflate the result.
 
-Duplicates and test leakage: raw train had 67,601 fully-duplicate rows (38.6%),
-all removed. On top of that, 1,722 train rows have the exact same feature values
-as a test row, and those get dropped from train too, because a model can memorize
-a row it will later be scored on. That match uses the features only, not the
-label; a repeated feature pattern is still a leak even when the two copies happen
-to carry different labels. Test itself is never modified. (The EDA reports a
-bigger overlap number, 8,421; that one counts raw rows before dedup and matches
-on the whole row including the label, so the two numbers measure different
-things.)
+Train/validation predictor-overlap fix ([GitHub Issue #1](https://github.com/shivammmmg/network-intrusion-detection-ml/issues/1)): the binary-task
+deduplication key is now all 42 model predictors plus `label`; `attack_cat` is
+not allowed to distinguish otherwise identical binary examples. This removed
+74,072 same-label predictor duplicates. After that step, 229 unique predictor
+vectors (458 rows) mapped to both binary labels; all of those ambiguous rows
+were removed rather than silently choosing a label. The remaining development
+pool had no repeated predictor vector before its stratified split.
 
-Class balance mismatch: train is 51.4% attack, test 55.1%, so majority-class
+Test leakage is handled separately: 1,204 remaining development rows with
+predictor values matching a test row were removed. That match uses features
+only, not test labels; test itself is never modified. The regenerated split has
+zero train/validation, train/test, and validation/test predictor overlap.
+
+Class balance mismatch: train is 48.4% attack, test 55.1%, so majority-class
 accuracy isn't comparable across the two. Compare models to the baseline on
 precision/recall/F1/PR-AUC, not accuracy.
 
@@ -73,26 +76,33 @@ it belongs in the limitations section of the report.
 
 ## Split
 Test is the frozen hold-out: cleaned only, touched once at the end. Train is
-de-duplicated, has its test-overlap removed, then split 80/20 into train/val with
-`random_state=42`, stratified so both slices keep the attack rate. One split,
-made once, shared with everyone. Don't re-split.
+deduplicated on predictors plus the binary label, ambiguous predictor/label
+conflicts are removed, test-overlapping predictors are removed, then the
+remaining development pool is split 80/20 into train/val with `random_state=42`,
+stratified so both slices keep the attack rate. One split, made once, shared with
+everyone. Don't re-split.
 
 ## Preprocessing artifacts (fit on train only)
 | Artifact | For | Encoding | Scaling | Features |
 |---|---|---|---|--:|
-| `preprocess_linear.joblib` | LogReg, NN | OneHot (rare folded) | RobustScaler | 86 |
+| `preprocess_linear.joblib` | LogReg, NN | OneHot (rare folded) | RobustScaler | 66 |
 | `preprocess_tree.joblib` | RF, XGBoost | OrdinalEncoder | none | 39 |
-| `preprocess_linear_with_ttl.joblib` | ablation | " | " | 89 |
+| `preprocess_linear_with_ttl.joblib` | ablation | " | " | 69 |
 | `preprocess_tree_with_ttl.joblib` | ablation | " | " | 42 |
 
-Two variants because scaling and one-hot help the linear/NN side but do nothing
+The corrected train split has fewer repeated categorical observations, so the
+train-only `min_frequency`/`max_categories` rules fold more categorical levels;
+the linear feature count is therefore 66 (69 with TTL), rather than the former
+86/89. Two variants because scaling and one-hot help the linear/NN side but do nothing
 for trees (and one-hotting a 133-level column just splinters them). The shared
 tree artifact doesn't use XGBoost's native categorical mode; whoever owns XGBoost
 can build that off the raw cleaned parquet if they want it.
 
 ## Baseline (see `baseline.md`)
-`DummyClassifier(most_frequent)`: test accuracy 0.551, F1 0.710 (predicts all
-attack). Real models have to clear that on F1/PR-AUC, not accuracy.
+`DummyClassifier(most_frequent)` now predicts normal because the corrected
+development pool is 51.6% normal: validation accuracy 0.516, F1 0.000, PR-AUC
+0.484; frozen-test accuracy 0.449, F1 0.000, PR-AUC 0.551. Real models have to
+clear the baseline on F1/PR-AUC, not accuracy.
 
 ## Reproducibility
 scikit-learn 1.9.0, pandas 3.0.3, numpy 2.5.1, xgboost 3.3.0, all pinned in
