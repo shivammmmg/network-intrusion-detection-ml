@@ -1,0 +1,19 @@
+{
+  "notes": "Test metrics are reference outputs only; no test result was used for model selection.",
+  "test_reference_only": {
+    "accuracy": 0.8711436622455424,
+    "f1": 0.893122311435278,
+    "pr_auc": 0.9859274974007409,
+    "precision": 0.8219206022510245,
+    "recall": 0.9778302303008912,
+    "roc_auc": 0.9809003722685008
+  },
+  "validation": {
+    "accuracy": 0.9371047083626142,
+    "f1": 0.9358258642765686,
+    "pr_auc": 0.9859381314281778,
+    "precision": 0.9250708788983394,
+    "recall": 0.9468338687946938,
+    "roc_auc": 0.9872826989524464
+  }
+}
