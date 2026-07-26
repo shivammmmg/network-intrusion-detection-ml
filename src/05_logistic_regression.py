@@ -46,7 +46,11 @@ TUNING_RESULTS_PATH = EXPERIMENT_DIR / "tuning_results.csv"
 ROUND2_RESULTS_PATH = EXPERIMENT_DIR / "round2_joint_search.csv"
 MODEL_PATH = ARTIFACTS_DIR / "logistic_regression.joblib"
 PREPROCESSOR_PATH = ARTIFACTS_DIR / "preprocess_linear.joblib"
+TUNING_MAX_ITER = 3000
+TUNING_TOL = 0.001
 
+FINAL_MAX_ITER = 10000
+FINAL_TOL = 0.0001
 EXPECTED_FEATURES = 66
 EXPECTED_SHAPES = {
     "train": (79685, EXPECTED_FEATURES),
@@ -176,13 +180,15 @@ def metric_dict(
         for name, value in raw_metric_dict(y_true, probabilities).items()
     }
 
-
-def make_model(parameters: dict[str, Any]) -> LogisticRegression:
+def make_model(parameters: dict[str, Any], *, final: bool = False) -> LogisticRegression:
     """Function creates a Logistic Regression model (reproducibility settings fixed)"""
+    max_iter = FINAL_MAX_ITER if final else TUNING_MAX_ITER
+    tol = FINAL_TOL if final else TUNING_TOL
+
     return LogisticRegression(
         **parameters,
-        max_iter=5000,
-        tol=0.0001,
+        max_iter=max_iter,
+        tol=tol,
         random_state=RANDOM_STATE,
     )
 
@@ -246,7 +252,8 @@ def fit_candidate(
         "penalty": parameters["penalty"],
         "solver": parameters["solver"],
         "class_weight": parameters["class_weight"],
-        "max_iter": 10000,
+        "max_iter": model.max_iter,
+        "tol": model.tol,
         "random_state": RANDOM_STATE,
     }
 
@@ -260,7 +267,7 @@ def fit_candidate(
         "class_weight": (
             "None" if logged_params["class_weight"] is None else logged_params["class_weight"]
         ),
-        "max_iter": 10000,
+        "max_iter": model.max_iter,
         "converged": converged,
         "n_iter": int(np.max(model.n_iter_)),
         "fit_seconds": fit_seconds,
@@ -308,9 +315,9 @@ def row_params(row: pd.Series) -> dict[str, Any]:
     parsed = json.loads(str(row["params_json"]))
     parsed["C"] = float(parsed["C"])
     parsed.pop("max_iter", None)
+    parsed.pop("tol", None)
     parsed.pop("random_state", None)
     return parsed
-
 
 def best_rows(stage: str, count: int) -> list[tuple[str, dict[str, Any]]]:
     results = read_tuning_results()
@@ -534,7 +541,7 @@ def run_final() -> None:
     print(json.dumps(locked_params, indent=2, sort_keys=True))
 
     x_train, y_train, x_val, y_val = load_train_val()
-    model = make_model(locked_params)
+    model = make_model(locked_params, final=True)
 
     print("Final fit: training data only. Validation is used only for locked-model reporting.")
     start = time.perf_counter()
@@ -571,7 +578,8 @@ def run_final() -> None:
         "model": "LogisticRegression",
         "selected_hyperparameters": {
             **locked_params,
-            "max_iter": 10000,
+            "max_iter": model.max_iter,
+            "tol": model.tol,
             "random_state": RANDOM_STATE,
         },
         "selection": {
