@@ -1,0 +1,33 @@
+{
+  "selected_config_id": "round2_21_hidden128x64_alpha0.001_lr0.0005_batch128",
+  "selected_hyperparameters": {
+    "activation": "relu",
+    "alpha": 0.001,
+    "batch_size": 128,
+    "hidden_layer_sizes": [
+      128,
+      64
+    ],
+    "learning_rate_init": 0.0005,
+    "solver": "adam"
+  },
+  "selection_metric": "validation average_precision_score (PR-AUC), then validation ROC-AUC",
+  "test_reference_only": {
+    "accuracy": 0.848224,
+    "f1": 0.874103,
+    "pr_auc": 0.972269,
+    "precision": 0.804466,
+    "recall": 0.95694,
+    "roc_auc": 0.964204
+  },
+  "test_set_used": true,
+  "test_usage_note": "The test split was opened only after model selection, the final model artifact, validation predictions, and locked configuration had been saved. Test metrics were not used for model selection.",
+  "validation": {
+    "accuracy": 0.901114,
+    "f1": 0.897875,
+    "pr_auc": 0.968057,
+    "precision": 0.898247,
+    "recall": 0.897502,
+    "roc_auc": 0.972019
+  }
+}
