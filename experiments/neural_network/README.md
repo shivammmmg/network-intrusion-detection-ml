@@ -28,4 +28,4 @@ During tuning, early stopping selected 59 training epochs for the winning config
 model was then refit on the full training split for exactly 59 epochs with early stopping disabled.
 Scikit-learn reported that the optimization had not converged by the end of the 59 training epochs. Therefore, 
 'converged' is recorded as 'false' in the final configuration. However, this does not mean that the training failed,
-as the model completed the planned refit and produced valid validation and test predictions.
+as the model completed the refit and produced valid validation and test predictions.
