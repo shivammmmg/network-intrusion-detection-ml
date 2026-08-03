@@ -1,0 +1,6 @@
+{
+  "logistic_regression": 0.4631204833813834,
+  "neural_network": 0.4577027505449918,
+  "random_forest": 0.492968259796183,
+  "xgboost": 0.46306103
+}
