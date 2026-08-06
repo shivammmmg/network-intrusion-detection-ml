@@ -68,16 +68,26 @@
     "state_infrequent_sklearn"
   ],
   "final_refit": {
-    "converged": false,
+    "beta_1": 0.9,
+    "beta_2": 0.999,
+    "convergence_warning_reported": true,
     "early_stopping": false,
-    "fit_seconds": 81.405749,
-    "max_iter": 59,
-    "n_iter_completed": 59
+    "epsilon": 1e-08,
+    "fit_seconds": 25.540172,
+    "max_iter": 28,
+    "n_iter_completed": 28,
+    "n_iter_no_change": 29,
+    "random_state": 42,
+    "reached_selected_epoch_budget": true,
+    "shuffle": true,
+    "tol": 0.0,
+    "training_rule": "fixed_validation_selected_epoch_budget"
   },
   "library_versions": {
     "joblib": "1.5.3",
     "numpy": "2.5.1",
     "pandas": "3.0.3",
+    "python": "3.13.5",
     "scikit-learn": "1.9.0"
   },
   "model": "MLPClassifier",
@@ -86,10 +96,18 @@
     "number_of_features": 66
   },
   "random_state": 42,
-  "selected_config_id": "round2_21_hidden128x64_alpha0.001_lr0.0005_batch128",
+  "reproducibility_environment": {
+    "mkl_num_threads": "1",
+    "numexpr_num_threads": "1",
+    "omp_num_threads": "1",
+    "openblas_num_threads": "1",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "pythonhashseed": "42"
+  },
+  "selected_config_id": "round2_17_hidden128x64_alpha0.0001_lr0.0005_batch128",
   "selected_hyperparameters": {
     "activation": "relu",
-    "alpha": 0.001,
+    "alpha": 0.0001,
     "batch_size": 128,
     "hidden_layer_sizes": [
       128,
@@ -98,10 +116,22 @@
     "learning_rate_init": 0.0005,
     "solver": "adam"
   },
-  "selected_tuning_epochs": 59,
+  "selected_tuning_epochs": 28,
   "selection": {
     "primary_metric": "validation PR-AUC",
     "source": "experiments/neural_network/round2_joint_search.csv",
     "tie_breaker": "validation ROC-AUC"
+  },
+  "tuning_training": {
+    "beta_1": 0.9,
+    "beta_2": 0.999,
+    "early_stopping": true,
+    "epsilon": 1e-08,
+    "max_iter": 100,
+    "n_iter_no_change": 8,
+    "random_state": 42,
+    "shuffle": true,
+    "tol": 0.0001,
+    "validation_fraction": 0.1
   }
 }
