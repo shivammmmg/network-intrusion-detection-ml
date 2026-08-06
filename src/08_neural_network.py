@@ -18,6 +18,17 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
+import platform
+import random
+
+# Use a single numerical-computation thread to reduce differences caused by
+# multithreaded BLAS implementations across repeated runs.
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 import sys
 import time
 import warnings
@@ -65,9 +76,13 @@ EXPECTED_SHAPES = {
     "test": (82332, EXPECTED_FEATURES),
 }
 
-MAX_ITER = 100
-N_ITER_NO_CHANGE = 8
+TUNING_MAX_ITER = 100
+TUNING_TOL = 0.0001
+TUNING_N_ITER_NO_CHANGE = 8
 VALIDATION_FRACTION = 0.10
+
+# Final refit uses the validation selected epoch budget exactly.
+FINAL_TOL = 0.0
 
 ROUND1_STAGES = ["baseline", "architecture", "regularization", "learning_rate"]
 
@@ -82,6 +97,11 @@ TUNING_COLUMNS = [
     "learning_rate_init",
     "batch_size",
     "max_iter",
+    "tol",
+    "shuffle",
+    "beta_1",
+    "beta_2",
+    "epsilon",
     "early_stopping",
     "validation_fraction",
     "n_iter_no_change",
@@ -123,6 +143,24 @@ BASE_PARAMETERS: dict[str, Any] = {
     "batch_size": 256,
     "learning_rate_init": 0.001,
 }
+
+def reset_random_seeds() -> None:
+    """Function resets non-estimator random generators before each model fit"""
+
+    random.seed(RANDOM_STATE)
+    np.random.seed(RANDOM_STATE)
+
+def validate_reproducibility_environment() -> None:
+    """Function ensures the required process-level random seed is configured"""
+
+    expected_seed = str(RANDOM_STATE)
+    actual_seed = os.environ.get("PYTHONHASHSEED")
+
+    if actual_seed != expected_seed:
+        raise RuntimeError(
+            "PYTHONHASHSEED must be set before running the experiment: "
+            f"expected {expected_seed}, received {actual_seed!r}."
+        )
 
 def load_split(split_name: str) -> tuple[pd.DataFrame, pd.Series]:
     """Function loads the raw features and labels for one fixed split"""
@@ -223,8 +261,13 @@ def normalized_parameters(parameters: dict[str, Any]) -> dict[str, Any]:
         **parameters,
         "early_stopping": True,
         "validation_fraction": VALIDATION_FRACTION,
-        "n_iter_no_change": N_ITER_NO_CHANGE,
-        "max_iter": MAX_ITER,
+        "n_iter_no_change": TUNING_N_ITER_NO_CHANGE,
+        "max_iter": TUNING_MAX_ITER,
+        "tol": TUNING_TOL,
+        "shuffle": True,
+        "beta_1": 0.9,
+        "beta_2": 0.999,
+        "epsilon": 1e-8,
         "random_state": RANDOM_STATE,
     }
 
@@ -233,15 +276,27 @@ def make_tuning_model(parameters: dict[str, Any]) -> MLPClassifier:
     return MLPClassifier(**normalized_parameters(parameters))
 
 def make_final_model(parameters: dict[str, Any], selected_epochs: int) -> MLPClassifier:
-    """Function refits the MLP model using the trained dataset"""
+    """Function creates the locked final MLP using an exact epoch budget"""
+
+    exact_epochs = max(1, int(selected_epochs))
 
     final_parameters = {
         **BASE_PARAMETERS,
         **parameters,
         "early_stopping": False,
-        "max_iter": max(1, int(selected_epochs)),
+        "max_iter": exact_epochs,
+
+        # Prevent tolerance-based termination before the selected epoch budget.
+        "tol": FINAL_TOL,
+        "n_iter_no_change": exact_epochs + 1,
+
+        "shuffle": True,
+        "beta_1": 0.9,
+        "beta_2": 0.999,
+        "epsilon": 1e-8,
         "random_state": RANDOM_STATE,
     }
+
     return MLPClassifier(**final_parameters)
 
 def remove_existing_stage(stage: str) -> None:
@@ -289,13 +344,20 @@ def fit_candidate(
     model = make_tuning_model(parameters)
     actual_parameters = normalized_parameters(parameters)
 
-    print(f"{stage}: {config_id} | fitting Neural Network...", flush=True)
+    reset_random_seeds()
+
+    print(
+        f"{stage}: {config_id} | fitting Neural Network...",
+        flush=True,
+    )
+
     start = time.perf_counter()
+
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always", ConvergenceWarning)
         model.fit(x_train, y_train)
-    fit_seconds = time.perf_counter() - start
 
+    fit_seconds = time.perf_counter() - start
     converged = not any(
         issubclass(item.category, ConvergenceWarning) for item in caught
     )
@@ -320,10 +382,15 @@ def fit_candidate(
         "alpha": actual_parameters["alpha"],
         "batch_size": actual_parameters["batch_size"],
         "learning_rate_init": actual_parameters["learning_rate_init"],
+        "max_iter": actual_parameters["max_iter"],
+        "tol": actual_parameters["tol"],
+        "shuffle": actual_parameters["shuffle"],
+        "beta_1": actual_parameters["beta_1"],
+        "beta_2": actual_parameters["beta_2"],
+        "epsilon": actual_parameters["epsilon"],
         "early_stopping": actual_parameters["early_stopping"],
         "validation_fraction": actual_parameters["validation_fraction"],
         "n_iter_no_change": actual_parameters["n_iter_no_change"],
-        "max_iter": actual_parameters["max_iter"],
         "n_iter": n_iter,
         "converged": converged,
         "stopped_early": stopped_early,
@@ -715,15 +782,30 @@ def run_final() -> None:
     print(f"Selected training epochs: {selected_epochs}")
     x_train, y_train, x_val, y_val = load_train_val()
     model = make_final_model(selected_parameters, selected_epochs)
-    print("final: locked_winner | fitting Neural Network on full training split...", flush=True)
+    reset_random_seeds()
+
+    print("final: locked_winner | fitting Neural Network "
+        "on full training split...",
+        flush=True,
+    )
+
     start = time.perf_counter()
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always", ConvergenceWarning)
         model.fit(x_train, y_train)
     fit_seconds = time.perf_counter() - start
+    completed_epochs = int(model.n_iter_)
 
-    final_converged = not any(
-        issubclass(item.category, ConvergenceWarning) for item in caught
+    if completed_epochs != selected_epochs:
+        raise RuntimeError(
+            "Final Neural Network did not complete the locked epoch budget: "
+            f"expected {selected_epochs}, completed {completed_epochs}."
+        )
+
+    final_reached_epoch_budget = completed_epochs == selected_epochs
+    final_warning_reported = any(
+        issubclass(item.category, ConvergenceWarning)
+        for item in caught
     )
 
     validation_probability = model.predict_proba(x_val)[:, 1]
@@ -750,11 +832,32 @@ def run_final() -> None:
         "selected_config_id": selected_config_id,
         "selected_hyperparameters": selected_parameters,
         "selected_tuning_epochs": selected_epochs,
+        "tuning_training": {
+            "early_stopping": True,
+            "max_iter": TUNING_MAX_ITER,
+            "tol": TUNING_TOL,
+            "n_iter_no_change": TUNING_N_ITER_NO_CHANGE,
+            "validation_fraction": VALIDATION_FRACTION,
+            "shuffle": True,
+            "beta_1": 0.9,
+            "beta_2": 0.999,
+            "epsilon": 1e-8,
+            "random_state": RANDOM_STATE,
+        },
         "final_refit": {
+            "training_rule": "fixed_validation_selected_epoch_budget",
             "early_stopping": False,
             "max_iter": selected_epochs,
-            "n_iter_completed": int(model.n_iter_),
-            "converged": final_converged,
+            "tol": FINAL_TOL,
+            "n_iter_no_change": selected_epochs + 1,
+            "shuffle": True,
+            "beta_1": 0.9,
+            "beta_2": 0.999,
+            "epsilon": 1e-8,
+            "random_state": RANDOM_STATE,
+            "n_iter_completed": completed_epochs,
+            "reached_selected_epoch_budget": final_reached_epoch_budget,
+            "convergence_warning_reported": final_warning_reported,
             "fit_seconds": round(fit_seconds, 6),
         },
         "selection": {
@@ -769,10 +872,19 @@ def run_final() -> None:
         "feature_names": feature_names,
         "random_state": RANDOM_STATE,
         "library_versions": {
+            "python": platform.python_version(),
             "scikit-learn": sklearn.__version__,
             "pandas": pd.__version__,
             "numpy": np.__version__,
             "joblib": joblib.__version__,
+        },
+        "reproducibility_environment": {
+            "platform": platform.platform(),
+            "pythonhashseed": os.environ.get("PYTHONHASHSEED"),
+            "omp_num_threads": os.environ.get("OMP_NUM_THREADS"),
+            "mkl_num_threads": os.environ.get("MKL_NUM_THREADS"),
+            "openblas_num_threads": os.environ.get("OPENBLAS_NUM_THREADS"),
+            "numexpr_num_threads": os.environ.get("NUMEXPR_NUM_THREADS"),
         },
     }
     write_json(CONFIG_PATH, configuration)
@@ -785,6 +897,13 @@ def run_final() -> None:
             "validation average_precision_score (PR-AUC), then validation ROC-AUC"
         ),
         "test_set_used": False,
+        "final_refit": {
+            "selected_epoch_budget": selected_epochs,
+            "n_iter_completed": completed_epochs,
+            "reached_selected_epoch_budget": final_reached_epoch_budget,
+            "convergence_warning_reported": final_warning_reported,
+            "fit_seconds": round(fit_seconds, 6),
+        },
     }
     write_json(METRICS_PATH, preliminary_metrics)
     x_test, y_test = load_test_after_lock()
@@ -805,30 +924,53 @@ def run_final() -> None:
     }
     write_json(METRICS_PATH, final_metrics)
 
+    if final_warning_reported:
+        convergence_note = (
+            "Scikit-learn emitted a ConvergenceWarning because the fixed epoch "
+            "budget was reached before its usual convergence condition was met. "
+            "The training run still completed the complete locked epoch budget."
+        )
+    else:
+        convergence_note = (
+            "Scikit-learn did not emit a ConvergenceWarning during the final refit."
+        )
+
     readme = f"""# Neural Network final experiment
 
 The final Neural Network model uses the Round 2 winner, selected by validation
 PR-AUC with validation ROC-AUC as the tie-breaker. The locked configuration is
 `{json.dumps(json_safe(selected_parameters), sort_keys=True)}`.
 
-During tuning, `MLPClassifier` used early stopping with an internal holdout from
-the training split. The winning candidate stopped after `{selected_epochs}`
-epochs. The final model was refit on the complete training split for
-`{selected_epochs}` epochs with early stopping disabled.
+During tuning, `MLPClassifier` used early stopping with a fixed internal
+holdout from the training split and `random_state={RANDOM_STATE}`. The winning
+candidate stopped after `{selected_epochs}` epochs.
+
+The final model was refit on the complete training split using the
+validation-selected budget of `{selected_epochs}` epochs. Early stopping was
+disabled, `tol={FINAL_TOL}`, and
+`n_iter_no_change={selected_epochs + 1}` so the model completed the locked
+epoch budget without using test results to revise the configuration.
+
+The final refit completed `{completed_epochs}` epochs.
+
+{convergence_note}
 
 Validation PR-AUC: `{validation_metrics['pr_auc']:.6f}`
 Validation ROC-AUC: `{validation_metrics['roc_auc']:.6f}`
 
-Preprocessing uses the fitted `artifacts/preprocess_linear.joblib` artifact with
-transform-only application. Round 1 history is stored in `tuning_results.csv`,
-and the joint search is stored in `round2_joint_search.csv`. Validation and test
-prediction CSVs support downstream cross-model comparison.
+Preprocessing uses the fitted `artifacts/preprocess_linear.joblib` artifact
+with transform-only application. Round 1 history is stored in
+`tuning_results.csv`, and the joint search is stored in
+`round2_joint_search.csv`. Validation and test prediction CSVs support
+downstream cross-model comparison.
 
-Test metrics are stored under `test_reference_only` in `metrics.json`. They were
-computed only after model selection and were not used to choose the model.
+Test metrics are stored under `test_reference_only` in `metrics.json`. They
+were computed only after model selection and were not used to choose or
+revise the model.
 
 Final train-only refit runtime: `{fit_seconds:.3f}` seconds.
 """
+
     README_PATH.write_text(readme, encoding="utf-8")
 
     print("Final validation metrics:", json.dumps(validation_metrics, sort_keys=True))
@@ -864,6 +1006,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    validate_reproducibility_environment()
 
     if args.stage == "baseline":
         run_baseline()
