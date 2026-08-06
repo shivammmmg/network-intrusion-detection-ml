@@ -8,8 +8,9 @@ distribution drift.
 
 > **Project status:** the shared data workflow, exploratory analysis, leakage
 > audit, fixed train/validation/test split, fitted preprocessing artifacts, and
-> baseline classifiers are implemented. Model development and advanced analysis
-> are currently in progress.
+> baseline classifiers are implemented. Logistic Regression and Neural Network
+> are finalized; standardized evaluation and advanced analysis remain in
+> progress.
 
 The original proposal is available in
 [`EECS 3404 Major Project Idea.pdf`](./EECS%203404%20Major%20Project%20Idea.pdf).
@@ -36,6 +37,23 @@ The intended model comparison is:
 Models are selected on validation data and evaluated on the frozen test set only
 after the modelling choices are finalized. Accuracy is reported, but never used
 alone, because it can hide missed attacks or a poor false-positive rate.
+
+### Final Logistic Regression and Neural Network handoff
+
+- Logistic Regression is finalized, with its saved model, configuration, metrics,
+  and validation/test predictions available in `artifacts/` and
+  `experiments/logistic_regression/`.
+- Neural Network is finalized with the corrected validation-selected winner:
+  `alpha=0.0001` and a 28-epoch final refit. Its saved model, configuration,
+  metrics, and validation/test predictions are available in `artifacts/` and
+  `experiments/neural_network/`.
+- The updated Neural Network artifact and prediction files pass the committed
+  verification script. Sharwin must rerun standardized validation threshold
+  selection and final locked-threshold evaluation before treating the
+  cross-model evaluation as final.
+- Exact fresh Neural Network training can vary across Python, operating-system,
+  and BLAS environments. The committed artifact verification remains reproducible
+  with the saved model and preprocessing artifact.
 
 ## Dataset
 
@@ -204,7 +222,12 @@ accuracy.
 │   ├── 02_clean_split.py          # Cleaning, deduplication, leakage removal, splits
 │   ├── 03_pipelines.py            # Train-only preprocessing artifacts
 │   ├── 04_baseline.py             # Dummy-classifier baselines
-│   ├── 05_logistic_regression.py  # Initial Logistic Regression work
+│   ├── 05_logistic_regression.py  # Final Logistic Regression experiment
+│   ├── 06_random_forest.py        # Random Forest experiment
+│   ├── 07_xgboost.py              # XGBoost experiment
+│   ├── 08_neural_network.py       # Final Neural Network experiment
+│   ├── 08_rf_xgboost_analysis.py  # Random Forest/XGBoost analysis
+│   ├── 08_neural_network_verify.py # Neural Network artifact verification
 │   ├── config.py                  # Paths, seed, feature roles
 │   └── preprocess.py              # Cleaning and preprocessing builders
 ├── data/processed/                # Shared X/y Parquet splits
@@ -234,15 +257,6 @@ The agreed work after model development includes:
 Team ownership and handoff rules are defined in
 [TEAM_RESPONSIBILITIES.md](TEAM_RESPONSIBILITIES.md).
 
-## Known implementation note
-
-`src/05_logistic_regression.py` is an initial model script and is not yet part
-of the reproducible `00`-`04` workflow. It currently requests lowercase
-`x_train.parquet`/`x_val.parquet`, while the generated files are named
-`X_train.parquet`/`X_val.parquet`. Update those filenames before running that
-script, and add validation metrics/artifacts before treating it as a completed
-model result.
-
 ## Limitations
 
 - UNSW-NB15 uses synthetic/testbed traffic and may not represent production
@@ -261,7 +275,9 @@ model result.
 Dependencies are pinned in `requirements.txt`; the main scripts use the fixed
 seed in `src/config.py`; and `artifacts/manifest.json` records package versions,
 input hashes, preprocessing variants, and output feature counts. Generated
-documentation records the shared split and baseline measurements.
+documentation records the shared split and baseline measurements. Exact fresh
+Neural Network training may vary by Python, operating-system, and BLAS
+environment; use the committed artifact verification for the saved handoff.
 
 ## Academic use
 
