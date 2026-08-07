@@ -29,7 +29,7 @@ The resulting thresholds were saved in
 | Model | Locked validation-selected threshold |
 |---|---:|
 | Logistic Regression | 0.4631204833813834 |
-| Neural Network | 0.4577027505449918 |
+| Neural Network | 0.3454528735910796 |
 | Random Forest | 0.4929682597961830 |
 | XGBoost | 0.4630610300000000 |
 
@@ -54,7 +54,7 @@ The common test set contains 45,332 attack samples and 37,000 normal samples.
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC | TN | FP | FN | TP | FPR | FNR |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | Logistic Regression | 0.794321 | 0.747844 | 0.945116 | 0.834987 | 0.906538 | 0.927520 | 22,554 | 14,446 | 2,488 | 42,844 | 0.390432 | 0.054884 |
-| Neural Network | 0.848224 | 0.804466 | 0.956940 | 0.874103 | 0.964204 | 0.972269 | 26,456 | 10,544 | 1,952 | 43,380 | 0.284973 | 0.043060 |
+| Neural Network | 0.853216 | 0.815658 | 0.947565 | 0.876677 | 0.959934 | 0.970199 | 27,292 | 9,708 | 2,377 | 42,955 | 0.262378 | 0.052435 |
 | Random Forest | 0.868848 | 0.815760 | 0.984051 | 0.892037 | 0.977464 | 0.982272 | 26,925 | 10,075 | 723 | 44,609 | 0.272297 | 0.015949 |
 | XGBoost | 0.871144 | 0.821921 | 0.977830 | 0.893122 | 0.980900 | 0.985927 | 27,396 | 9,604 | 1,005 | 44,327 | 0.259568 | 0.022170 |
 
@@ -67,7 +67,7 @@ highest recall and fewest false negatives.
 | Model | Threshold | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC | TN | FP | FN | TP | FPR | FNR |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | Logistic Regression | 0.463120 | 0.795632 | 0.746081 | 0.953256 | 0.837039 | 0.906538 | 0.927520 | 22,293 | 14,707 | 2,119 | 43,213 | 0.397486 | 0.046744 |
-| Neural Network | 0.457703 | 0.838289 | 0.790566 | 0.960844 | 0.867427 | 0.964204 | 0.972269 | 25,461 | 11,539 | 1,775 | 43,557 | 0.311865 | 0.039156 |
+| Neural Network | 0.345453 | 0.819888 | 0.765849 | 0.969205 | 0.855610 | 0.959934 | 0.970199 | 23,567 | 13,433 | 1,396 | 43,936 | 0.363054 | 0.030795 |
 | Random Forest | 0.492968 | 0.867136 | 0.813239 | 0.984867 | 0.890862 | 0.977464 | 0.982272 | 26,747 | 10,253 | 686 | 44,646 | 0.277108 | 0.015133 |
 | XGBoost | 0.463061 | 0.864816 | 0.812655 | 0.980521 | 0.888731 | 0.980900 | 0.985927 | 26,753 | 10,247 | 883 | 44,449 | 0.276946 | 0.019479 |
 
@@ -82,7 +82,7 @@ All values below are locked threshold minus default threshold.
 | Model | Delta Accuracy | Delta Precision | Delta Recall | Delta F1 | Delta FP | Delta FN | Delta FPR | Delta FNR |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Logistic Regression | +0.001312 | -0.001763 | +0.008140 | +0.002053 | +261 | -369 | +0.007054 | -0.008140 |
-| Neural Network | -0.009935 | -0.013900 | +0.003905 | -0.006676 | +995 | -177 | +0.026892 | -0.003905 |
+| Neural Network | -0.033328 | -0.049809 | +0.021640 | -0.021067 | +3,725 | -981 | +0.100676 | -0.021640 |
 | Random Forest | -0.001713 | -0.002521 | +0.000816 | -0.001175 | +178 | -37 | +0.004811 | -0.000816 |
 | XGBoost | -0.006328 | -0.009265 | +0.002691 | -0.004391 | +643 | -122 | +0.017378 | -0.002691 |
 
@@ -95,6 +95,14 @@ generalization limitation, not an implementation error. It is reported as an
 honest out-of-sample result and was not used to revise thresholds, models,
 preprocessing, or hyperparameters.
 
+The Neural Network shows the largest threshold effect. Lowering its threshold
+from 0.50 to the validation-selected 0.3454528735910796 increases frozen-test
+recall from 0.947565 to 0.969205 and reduces false negatives from 2,377 to
+1,396. However, false positives rise substantially from 9,708 to 13,433,
+precision falls from 0.815658 to 0.765849, and test F1 falls from 0.876677 to
+0.855610. This tradeoff is reported without changing the validation-selected
+threshold based on test performance.
+
 ## False-positive and false-negative interpretation
 
 A false positive labels normal traffic as an attack. It adds investigation
@@ -104,7 +112,7 @@ trades more false alerts for fewer missed attacks, as the delta table shows.
 
 At the locked thresholds, Logistic Regression misses 2,119 attacks and raises
 14,707 false alerts, substantially more errors than the tree ensembles. Neural
-Network improves both counts but still has 1,775 false negatives and 11,539
+Network improves both counts but still has 1,396 false negatives and 13,433
 false positives. Random Forest and XGBoost are close on false positives (10,253
 versus 10,247), while Random Forest misses 197 fewer attacks (686 versus 883).
 Thus Random Forest achieves a stronger attack-detection result at essentially
