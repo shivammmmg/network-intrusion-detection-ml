@@ -474,7 +474,7 @@ def write_summary(
         "methodology": {
             "positive_class": 1,
             "default_threshold": DEFAULT_THRESHOLD,
-            "locked_threshold_source": str(THRESHOLDS_PATH.relative_to(ROOT_FOLDER)),
+            "locked_threshold_source": THRESHOLDS_PATH.relative_to(ROOT_FOLDER).as_posix(),
             "threshold_selection_data": "validation_only",
             "test_threshold_optimization_performed": False,
             "training_or_refitting_performed": False,

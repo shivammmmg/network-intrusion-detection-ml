@@ -197,7 +197,7 @@
   },
   "methodology": {
     "default_threshold": 0.5,
-    "locked_threshold_source": "experiments\\standardized_evaluation\\selected_thresholds.json",
+    "locked_threshold_source": "experiments/standardized_evaluation/selected_thresholds.json",
     "positive_class": 1,
     "test_threshold_optimization_performed": false,
     "threshold_selection_data": "validation_only",
