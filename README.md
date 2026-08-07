@@ -48,9 +48,12 @@ alone, because it can hide missed attacks or a poor false-positive rate.
   metrics, and validation/test predictions are available in `artifacts/` and
   `experiments/neural_network/`.
 - The updated Neural Network artifact and prediction files pass the committed
-  verification script. Sharwin must rerun standardized validation threshold
-  selection and final locked-threshold evaluation before treating the
-  cross-model evaluation as final.
+  verification script. Standardized validation threshold selection and
+  locked-threshold test evaluation have been rerun using the finalized Logistic
+  Regression, Neural Network, Random Forest, and XGBoost outputs.
+- XGBoost is strongest at the default `0.50` threshold, while Random Forest is
+  strongest at the validation-selected locked thresholds. Sharwin's evaluation
+  is finalized.
 - Exact fresh Neural Network training can vary across Python, operating-system,
   and BLAS environments. The committed artifact verification remains reproducible
   with the saved model and preprocessing artifact.
