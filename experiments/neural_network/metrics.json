@@ -1,8 +1,15 @@
 {
-  "selected_config_id": "round2_21_hidden128x64_alpha0.001_lr0.0005_batch128",
+  "final_refit": {
+    "convergence_warning_reported": true,
+    "fit_seconds": 25.540172,
+    "n_iter_completed": 28,
+    "reached_selected_epoch_budget": true,
+    "selected_epoch_budget": 28
+  },
+  "selected_config_id": "round2_17_hidden128x64_alpha0.0001_lr0.0005_batch128",
   "selected_hyperparameters": {
     "activation": "relu",
-    "alpha": 0.001,
+    "alpha": 0.0001,
     "batch_size": 128,
     "hidden_layer_sizes": [
       128,
@@ -13,21 +20,21 @@
   },
   "selection_metric": "validation average_precision_score (PR-AUC), then validation ROC-AUC",
   "test_reference_only": {
-    "accuracy": 0.848224,
-    "f1": 0.874103,
-    "pr_auc": 0.972269,
-    "precision": 0.804466,
-    "recall": 0.95694,
-    "roc_auc": 0.964204
+    "accuracy": 0.853216,
+    "f1": 0.876677,
+    "pr_auc": 0.970199,
+    "precision": 0.815658,
+    "recall": 0.947565,
+    "roc_auc": 0.959934
   },
   "test_set_used": true,
   "test_usage_note": "The test split was opened only after model selection, the final model artifact, validation predictions, and locked configuration had been saved. Test metrics were not used for model selection.",
   "validation": {
-    "accuracy": 0.901114,
-    "f1": 0.897875,
-    "pr_auc": 0.968057,
-    "precision": 0.898247,
-    "recall": 0.897502,
-    "roc_auc": 0.972019
+    "accuracy": 0.888314,
+    "f1": 0.882443,
+    "pr_auc": 0.959759,
+    "precision": 0.900086,
+    "recall": 0.865478,
+    "roc_auc": 0.958987
   }
 }
