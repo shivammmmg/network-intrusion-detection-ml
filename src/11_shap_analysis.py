@@ -62,8 +62,8 @@ def load_models():
 
 def compute_shap_values(model, X_background_pool, X_sample, model_name):
     """Computes SHAP values with TreeExplainer for a given model and sample of data.
-    The background reference is drawn from `X_background_pool` (supposed to be 
-    training data) since the background should represent the training distribution rather 
+    The background reference is drawn from `X_background_pool` (supposed to be
+    training data) since the background should represent the training distribution rather
     than the exact points being explained. Returns a shap.Explanation object.
     """
     rng = np.random.default_rng(RANDOM_STATE)
@@ -202,7 +202,7 @@ def main():
             if len(pos_list) > 0:
                 positions[name] = pos_list[0]
             else:
-                # If there is no case, skip the waterfall plot to prevent mislabelling. 
+                # If there is no case, skip the waterfall plot to prevent mislabelling.
                 print(f"  No {name} case found in sample of size {sample_size}; skipping its waterfall plot.")
 
         # Generates a waterfall plot for Random Forest and XGBoost for each of the four cases found.
@@ -222,4 +222,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
