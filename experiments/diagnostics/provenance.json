@@ -1,0 +1,96 @@
+{
+  "git_commit": "cc192d97017d1407143fdb4df66d7404d45b10f3",
+  "inputs": {
+    "artifacts/logistic_regression.joblib": {
+      "sha256": "df8d161dcb2bc3036ea73ca9f7206211b2aef54e12ac184fadd180693dd815a1",
+      "size_bytes": 1599
+    },
+    "artifacts/manifest.json": {
+      "sha256": "d0fa5a80178b29391bb2028151f1ed357bd0027b5f7500f1c777c537d6048660",
+      "size_bytes": 928
+    },
+    "artifacts/neural_network.joblib": {
+      "sha256": "19e6211e08c0b39aa550198c383e4d6ef1a5c38d29266d601121f4cf47ffa3fb",
+      "size_bytes": 525469
+    },
+    "artifacts/preprocess_linear.joblib": {
+      "sha256": "d856267e11546d9494402ec88b3430de5db071c287d08e5034fb1c9cdfde0f70",
+      "size_bytes": 3568
+    },
+    "artifacts/preprocess_linear_with_ttl.joblib": {
+      "sha256": "062ad3dda896f74847885764451cb65ced161ab7fa268367106dcbd9f38eb85e",
+      "size_bytes": 3568
+    },
+    "artifacts/preprocess_tree.joblib": {
+      "sha256": "37c00fa5e57efc623c739b8ffc2882955d9b6ae4473edd6e4253d57527bf13b1",
+      "size_bytes": 2523
+    },
+    "artifacts/preprocess_tree_with_ttl.joblib": {
+      "sha256": "c6ead6cff017db3be1938115ff12486a20a8cb71bee16e9000928e624beb8983",
+      "size_bytes": 2506
+    },
+    "artifacts/random_forest.joblib": {
+      "sha256": "696c9ef758d359e9270fe2b6a37a10d2906d2856386982e63dce40cfe63c4100",
+      "size_bytes": 84012461
+    },
+    "artifacts/xgboost.joblib": {
+      "sha256": "164b4be89c125332709953938b2f8def86241f128eb4f97c9e39349ed0e58991",
+      "size_bytes": 3646034
+    },
+    "data/processed/X_test.parquet": {
+      "sha256": "d585e6d89957f82791cb97e39777a4cf17a17ed72a6ab0f851e1a172dadfc7a0",
+      "size_bytes": 6228634
+    },
+    "data/processed/X_train.parquet": {
+      "sha256": "3ea20c1d1a2beeea1b512c8e0c8011e51b97f5e598e61d842f8486d2dafc0551",
+      "size_bytes": 8833443
+    },
+    "data/processed/X_val.parquet": {
+      "sha256": "3e70efbe804fe035b88b9db28335bbf2c166ca6743dce131afc8b64f36720424",
+      "size_bytes": 2263343
+    },
+    "data/processed/y_test.parquet": {
+      "sha256": "9e4d14a142d7e7625d3f0f9d96c5deb0196194c2304b4007b3f21193f1e4aa3a",
+      "size_bytes": 1555
+    },
+    "data/processed/y_train.parquet": {
+      "sha256": "ce98bb67201e65133e3ad242e90ff8ae7579336830f58865e07a822778766925",
+      "size_bytes": 11715
+    },
+    "data/processed/y_val.parquet": {
+      "sha256": "f29fb9d96e37207479fd57279e073a4b2ea84338146c9b062efb9475be08ed82",
+      "size_bytes": 3782
+    },
+    "experiments/logistic_regression/test_predictions.csv": {
+      "sha256": "7746f517bcef60e73c5ea798fd4685468933a0bbd4fb69cd0d6b85d3bfb93f25",
+      "size_bytes": 2418548
+    },
+    "experiments/neural_network/test_predictions.csv": {
+      "sha256": "905c2aaf81b3f0cd2e80e508530c62534c4ae280b24d17037878e3a613ac260d",
+      "size_bytes": 2438910
+    },
+    "experiments/random_forest/test_predictions.csv": {
+      "sha256": "79fae216176e320e764b1f2d49cd482c1d6c09613d8db8fa8b66c723cd60cf44",
+      "size_bytes": 1706606
+    },
+    "experiments/standardized_evaluation/selected_thresholds.json": {
+      "sha256": "d6fd3ba6da48f3954cc7a2a329cca8a4de787aba11372629c3d45990d4c27cde",
+      "size_bytes": 151
+    },
+    "experiments/xgboost/test_predictions.csv": {
+      "sha256": "8ad8a76855b76abef318e07ab7a6421441fa67ade5b94ad3e5127e7097f69ae1",
+      "size_bytes": 1732213
+    }
+  },
+  "package_versions": {
+    "joblib": "1.5.3",
+    "numpy": "2.4.6",
+    "pandas": "3.0.3",
+    "python": "3.13.1",
+    "scikit-learn": "1.9.0",
+    "scipy": "1.18.0",
+    "xgboost": "3.3.0"
+  },
+  "random_state": 42,
+  "timestamp_utc": "2026-08-10T22:52:09.722468Z"
+}

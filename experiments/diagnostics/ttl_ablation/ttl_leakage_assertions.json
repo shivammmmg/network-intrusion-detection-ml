@@ -1,0 +1,42 @@
+{
+  "split_rows_pairwise_disjoint": {
+    "overlap_counts": {
+      "train_test": 0,
+      "train_val": 0,
+      "val_test": 0
+    },
+    "pass": true
+  },
+  "ttl_column_presence": {
+    "no_ttl_test": [],
+    "no_ttl_train": [],
+    "with_ttl_test": [
+      "ct_state_ttl",
+      "dttl",
+      "sttl"
+    ],
+    "with_ttl_train": [
+      "ct_state_ttl",
+      "dttl",
+      "sttl"
+    ],
+    "with_ttl_val": [
+      "ct_state_ttl",
+      "dttl",
+      "sttl"
+    ]
+  },
+  "ttl_columns": [
+    "ct_state_ttl",
+    "dttl",
+    "sttl"
+  ],
+  "ttl_only_in_with_ttl": true,
+  "with_ttl_feature_counts": {
+    "expected": 42,
+    "pass": true,
+    "test": 42,
+    "train": 42,
+    "val": 42
+  }
+}

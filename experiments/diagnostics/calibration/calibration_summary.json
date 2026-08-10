@@ -1,0 +1,44 @@
+{
+  "models": {
+    "logistic_regression": {
+      "brier_score": 0.14064665207083143,
+      "expected_calibration_error": 0.09286429324063998,
+      "worst_bin": {
+        "absolute_gap": 0.3151478137059105,
+        "bin": 6,
+        "count": 8234,
+        "gap": -0.3151478137059105
+      }
+    },
+    "neural_network": {
+      "brier_score": 0.09758589379093893,
+      "expected_calibration_error": 0.0845485740286539,
+      "worst_bin": {
+        "absolute_gap": 0.33808349619966893,
+        "bin": 5,
+        "count": 8233,
+        "gap": -0.33808349619966893
+      }
+    },
+    "random_forest": {
+      "brier_score": 0.084251378795293,
+      "expected_calibration_error": 0.08717536871975624,
+      "worst_bin": {
+        "absolute_gap": 0.32598396314581213,
+        "bin": 2,
+        "count": 8233,
+        "gap": -0.32598396314581213
+      }
+    },
+    "xgboost": {
+      "brier_score": 0.08882199972867966,
+      "expected_calibration_error": 0.09420263004677538,
+      "worst_bin": {
+        "absolute_gap": 0.4675014994420418,
+        "bin": 5,
+        "count": 8233,
+        "gap": -0.4675014994420418
+      }
+    }
+  }
+}

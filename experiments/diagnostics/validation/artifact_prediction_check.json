@@ -1,0 +1,42 @@
+{
+  "models": {
+    "logistic_regression": {
+      "max_abs_diff": 5.162537064506978e-15,
+      "mean_abs_diff": 5.3477945493915337e-17,
+      "n_rows": 82332,
+      "pass": true,
+      "prediction_rows": 82332,
+      "sample_index_matches_test_order": true,
+      "true_label_matches_y_test": true
+    },
+    "neural_network": {
+      "max_abs_diff": 2.220446049250313e-15,
+      "mean_abs_diff": 5.645907273541652e-17,
+      "n_rows": 82332,
+      "pass": true,
+      "prediction_rows": 82332,
+      "sample_index_matches_test_order": true,
+      "true_label_matches_y_test": true
+    },
+    "random_forest": {
+      "max_abs_diff": 3.3306690738754696e-16,
+      "mean_abs_diff": 1.4709789058099925e-17,
+      "n_rows": 82332,
+      "pass": true,
+      "prediction_rows": 82332,
+      "sample_index_matches_test_order": true,
+      "true_label_matches_y_test": true
+    },
+    "xgboost": {
+      "max_abs_diff": 2.9800415024539006e-08,
+      "mean_abs_diff": 6.833738884083907e-09,
+      "n_rows": 82332,
+      "pass": true,
+      "prediction_rows": 82332,
+      "sample_index_matches_test_order": true,
+      "true_label_matches_y_test": true
+    }
+  },
+  "pass": true,
+  "tolerance": 1e-06
+}

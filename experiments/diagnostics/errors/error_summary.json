@@ -1,0 +1,44 @@
+{
+  "models": {
+    "logistic_regression": {
+      "false_negative_rate": 0.04674402188299656,
+      "false_positive_rate": 0.3974864864864865,
+      "group_counts": {
+        "FN": 2119,
+        "FP": 14707,
+        "TN": 22293,
+        "TP": 43213
+      }
+    },
+    "neural_network": {
+      "false_negative_rate": 0.030795023383040677,
+      "false_positive_rate": 0.36305405405405405,
+      "group_counts": {
+        "FN": 1396,
+        "FP": 13433,
+        "TN": 23567,
+        "TP": 43936
+      }
+    },
+    "random_forest": {
+      "false_negative_rate": 0.015132798023471278,
+      "false_positive_rate": 0.2771081081081081,
+      "group_counts": {
+        "FN": 686,
+        "FP": 10253,
+        "TN": 26747,
+        "TP": 44646
+      }
+    },
+    "xgboost": {
+      "false_negative_rate": 0.01947851407394335,
+      "false_positive_rate": 0.27694594594594596,
+      "group_counts": {
+        "FN": 883,
+        "FP": 10247,
+        "TN": 26753,
+        "TP": 44449
+      }
+    }
+  }
+}
