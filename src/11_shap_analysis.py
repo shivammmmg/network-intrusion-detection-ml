@@ -2,7 +2,7 @@
 
 This script creates bar plots, beeswarm plots, and waterfall plots for SHAP values of the trained models.
 
-Outputs are saved to experiments/explainability_and_diagnostics/shap_analysis/figures/.
+Outputs are saved to experiments/shap_analysis/figures/.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import shap
 import joblib
+from xgboost import XGBClassifier
 
 ROOT_FOLDER = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT_FOLDER / "src"))
@@ -54,9 +55,16 @@ def load_data():
 
 
 def load_models():
-    """Loads the trained Random Forest and XGBoost models from disk."""
+    """Loads the trained Random Forest (joblib) and XGBoost (native JSON) models."""
     rf = joblib.load(RF_MODEL_PATH)
-    xgb = joblib.load(XGB_MODEL_PATH)
+    
+    # Loads XGBoost from the native JSON file (more reliable)
+    native_model_path = ROOT_FOLDER / "experiments" / "xgboost" / "xgboost_model.json"
+    if not native_model_path.exists():
+        raise FileNotFoundError(f"Native XGBoost model not found: {native_model_path}")
+    xgb = XGBClassifier()
+    xgb.load_model(native_model_path)
+    
     return rf, xgb
 
 

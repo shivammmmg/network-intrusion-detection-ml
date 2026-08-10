@@ -7,7 +7,7 @@ This script performs the following analysis on the finalized models:
 - Distribution-drift analysis (PSI, KS) between training and test (data‑only).
 - TTL-feature ablation using the TTL-included preprocessing artifact (XGBoost only).
 
-It does not alter models or data; it only reads existing artifacts and places analysis outputs in experiments/explainability_and_diagnostics/final_analysis/.
+It does not alter models or data; it only reads existing artifacts and places analysis outputs in experiments/final_analysis/.
 """
 
 import sys
@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import joblib
+import json
 
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import average_precision_score, brier_score_loss
@@ -46,12 +47,6 @@ PREPROCESSOR_PATHS = {
     "Random Forest": ARTIFACTS_DIR / "preprocess_tree.joblib",
     "XGBoost": ARTIFACTS_DIR / "preprocess_tree.joblib",
 }
-PREDICTIONS_PATHS = {
-    "Logistic Regression": ROOT / "experiments" / "logistic_regression" / "test_predictions.csv",
-    "Neural Network": ROOT / "experiments" / "neural_network" / "test_predictions.csv",
-    "Random Forest": ROOT / "experiments" / "random_forest" / "test_predictions.csv",
-    "XGBoost": ROOT / "experiments" / "xgboost" / "test_predictions.csv",
-}
 
 THRESHOLDS_PATH = ROOT / "experiments" / "standardized_evaluation" / "selected_thresholds.json"
 locked_thresholds = pd.read_json(THRESHOLDS_PATH, typ="series")
@@ -62,6 +57,7 @@ THRESHOLDS = {
     "XGBoost": float(locked_thresholds["xgboost"]),
 }
 
+native_path = ROOT / "experiments" / "xgboost" / "xgboost_model.json"
 
 def load_data(preprocessor_path):
     """Load raw splits, transform, and return DataFrames with feature names"""
@@ -90,10 +86,17 @@ def load_data(preprocessor_path):
 
     return X_train, y_train, X_test, y_test, list(feature_names)
 
-
 def load_model_and_predictions(model_name, X_test, y_test):
     """Load model and its test prediction CSV"""
-    model = joblib.load(MODEL_PATHS[model_name])
+    if model_name == "XGBoost":
+        # Load from native JSON
+        if not native_path.exists():
+            raise FileNotFoundError(f"Native XGBoost model not found: {native_path}")
+        model = XGBClassifier()
+        model.load_model(native_path)
+    else: 
+        model = joblib.load(MODEL_PATHS[model_name])
+    
     proba = model.predict_proba(X_test)[:, 1]
     y_true = y_test.to_numpy(dtype=int) if hasattr(y_test, "to_numpy") else np.asarray(y_test, dtype=int)
     return model, y_true, proba
@@ -207,7 +210,7 @@ def main():
         model, _, _ = load_model_and_predictions(model_name, X_test, y_test)
         imp = permutation_importance(
             model, X_test, y_test, n_repeats=5, random_state=RANDOM_STATE,
-            scoring=pr_auc_scorer, n_jobs=-1
+            scoring=pr_auc_scorer, n_jobs=1
         )
         perm_importances[model_name] = imp
         df = pd.DataFrame({
@@ -257,7 +260,7 @@ def main():
     # Error profiling for Logistic Regression and Neural Network
     print("\nError profiling for Logistic Regression and Neural Network:")
     for model_name in ["Logistic Regression", "Neural Network"]:
-        _, y_true, proba = load_model_and_predictions(model_name, X_test_lin, y_test)
+        _, y_true, proba = load_model_and_predictions(model_name, X_test_lin, y_test) 
         X_test = X_test_lin
         threshold = THRESHOLDS[model_name]
         profile_errors(model_name, X_test, y_true, proba, threshold)
@@ -282,22 +285,21 @@ def main():
     X_train_ttl, _, X_test_ttl, _, features_ttl = load_data(
         PREPROCESSOR_PATHS["XGBoost"].with_name("preprocess_tree_with_ttl.joblib")
     )
-    original_model = joblib.load(MODEL_PATHS["XGBoost"])
-    model_params = original_model.get_params()
-    # Build new params: keep most, override a few
-    exclude_keys = {"n_estimators", "early_stopping_rounds", "eval_metric", "random_state", "n_jobs", "tree_method"}
-    new_params = {k: v for k, v in model_params.items() if k not in exclude_keys}
-    new_params.update({
-        "n_estimators": original_model.n_estimators,
-        "random_state": RANDOM_STATE,
-        "n_jobs": -1,
-        "tree_method": "hist",
-        "eval_metric": "aucpr",
-    })
-    model_ttl = XGBClassifier(**new_params)
+
+    # Load the finalized XGBoost hyperparameters (nested under selected_hyperparameters)
+    xgb_config_path = ROOT / "experiments" / "xgboost" / "config.json"
+    if not xgb_config_path.exists():
+        raise FileNotFoundError(f"Missing finalized XGBoost config: {xgb_config_path}")
+    with open(xgb_config_path) as f:
+        xgb_config = json.load(f)
+
+    ttl_params = {**xgb_config["selected_hyperparameters"]}
+    ttl_params["random_state"] = RANDOM_STATE
+
+    model_ttl = XGBClassifier(**ttl_params)
     print("Fitting XGBoost with TTL features on training data...")
     model_ttl.fit(X_train_ttl, y_train)
-
+    
     # Metrics for TTL model
     proba_ttl = model_ttl.predict_proba(X_test_ttl)[:, 1]
     pred_ttl = (proba_ttl >= THRESHOLDS["XGBoost"]).astype(int)
@@ -311,9 +313,16 @@ def main():
     }
     pd.DataFrame([ttl_metrics]).to_csv(OUTPUT_DIR / "ttl_ablation_metrics.csv", index=False)
 
-    # Recompute original metrics at the same locked threshold (for comparison)
-    proba_orig = original_model.predict_proba(X_test_tree)[:, 1]
-    pred_orig = (proba_orig >= THRESHOLDS["XGBoost"]).astype(int)
+    # Load official no‑TTL test predictions (from the finalized experiment)
+    xgb_test_pred_path = ROOT / "experiments" / "xgboost" / "test_predictions.csv"
+    if not xgb_test_pred_path.exists():
+        raise FileNotFoundError(f"Missing XGBoost test predictions: {xgb_test_pred_path}")
+    xgb_pred_df = pd.read_csv(xgb_test_pred_path)
+    proba_orig = xgb_pred_df["attack_probability"].to_numpy()
+    pred_orig = xgb_pred_df["predicted_label"].to_numpy()
+    # Ensure alignment with the test set
+    if len(proba_orig) != len(y_test):
+        raise ValueError("Test prediction length does not match y_test")
     original_metrics = {
         "pr_auc": average_precision_score(y_test, proba_orig),
         "roc_auc": roc_auc_score(y_test, proba_orig),
@@ -336,7 +345,7 @@ def main():
         "importance_std": perm_imp_ttl.importances_std,
     }).sort_values("importance_mean", ascending=False)
     imp_ttl_df.to_csv(OUTPUT_DIR / "permutation_importance_with_ttl.csv", index=False)
-
+    
     # Plot TTL comparison
     imp_no_ttl = perm_importances["XGBoost"]
     plot_feature_importance_ttl_comparison(
