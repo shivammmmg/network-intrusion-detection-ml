@@ -27,9 +27,9 @@ Missed attacks (false negatives) look artificially "normal" — window-size, loa
 **Global importance — top 10 by mean(|SHAP|):**
 
 > Random Forest SHAP values are on the **probability scale**.
-> XGBoost SHAP values come from a fallback explainer and are on the raw margin (log-odds) scale. 
+> XGBoost SHAP values come from a fallback explainer and are on the raw margin (log-odds) scale.
 > Compare feature *rankings* within each column freely, but do not compare the numeric magnitudes across columns.
-> "0.71" for XGBoost's `ackdat` is not on the same footing as "0.07" for Random Forest's `ackdat`, 
+> "0.71" for XGBoost's `ackdat` is not on the same footing as "0.07" for Random Forest's `ackdat`,
 > so it would be wrong to read that as XGBoost relying on `ackdat` "10x more" than Random Forest does.
 
 | Rank | Random Forest | ***Mean(\|SHAP\|), probability scale*** | XGBoost | ***Mean(\|SHAP\|), raw margin / log-odds scale*** |
@@ -50,7 +50,8 @@ Missed attacks (false negatives) look artificially "normal" — window-size, loa
 **Local check for `dload` contribution across 4 sampled rows (all `dload = 0` except the FN row):**
 
 > As above, the RF column is probability-scale and the XGBoost column is
-> raw-margin/log-odds-scale. Read each column's sign and rank on its own.
+> raw-margin/log-odds-scale — read each column's sign and rank on its own, not
+> the two side by side as equal-sized effects.
 
 | Instance | Outcome | RF SHAP(dload), probability scale | XGBoost SHAP(dload), raw margin (log-odds scale) |
 |:---|:---|---:|---:|
@@ -60,7 +61,6 @@ Missed attacks (false negatives) look artificially "normal" — window-size, loa
 | 283 | FN (true=1, pred=0), dload=2974.14 | *(not in top 9)* | +0.19 |
 
 `dload = 0` pushes toward the attack class in 3 of 4 rows for both models. Within Random Forest's own probability-scale, the effect is small in absolute terms (≤0.06 of a 0–1 probability). Within XGBoost's own log-odds values, `dload` is the single largest driver on two of the three rows where it appears (+0.86 of a 1.795 total margin for instance 0). These are two separate within-model observations and not a claim that XGBoost's effect is "bigger" than Random Forest's in any shared unit. On the shared false negative (row 283), both models were independently pulled toward "normal" by the same three features: `ct_srv_dst=3`, `ct_dst_src_ltm=3`, `sbytes=738`.
-
 
 ## 2. Permutation Feature Importance
 
@@ -106,7 +106,7 @@ Mean decrease in PR-AUC with 5 repeats and done on the test set. LR/NN use 66 po
 | service_dns | 0.0270 | 0.0003 |
 | sinpkt | 0.0203 | 0.0006 |
 
-**Random Forest** 
+**Random Forest**
 
 | Feature | Mean | Std |
 |:---|---:|---:|
@@ -146,8 +146,7 @@ Mean decrease in PR-AUC with 5 repeats and done on the test set. LR/NN use 66 po
 | sinpkt | 0.0010 | 0.0000 |
 | swin | 0.0010 | 0.0000 |
 
-`ct_dst_sport_ltm` and `dbytes` appear near the top across all 4 models despite different architectures. `dload`/`dmean` also rank highly for LR, NN, and XGBoost, but less for RF. `ackdat`/`state` matter for LR and the trees but far less for the NN. `swin`/`sload` dominate the NN but rank low elsewhere. 
-
+`ct_dst_sport_ltm` and `dbytes` appear near the top across all 4 models despite different architectures. `dload`/`dmean` also rank highly for LR, NN, and XGBoost, but less for RF. `ackdat`/`state` matter for LR and the trees but far less for the NN. `swin`/`sload` dominate the NN but rank low elsewhere.
 
 ## 3. Error Characterization (LR & NN)
 
@@ -184,7 +183,6 @@ Mean feature values by outcome class and at the locked threshold.
 | dmean | -0.25 | 2.91 | -0.19 | 1.41 |
 
 Missed attacks (FN) look more normal than true positives on window-size, load, and timing features in both models. The consistent independent signal from two model families is likely a real hard subpopulation and not a model quirk. False alarms (FP) are normal traffic whose `response_body_len`/`sload` happen to look attack-like.
-
 
 ## 4. Probability Calibration
 
@@ -266,8 +264,7 @@ Logistic Regression (3/10):
 | dpkts | 0.5212 | 0.3070 | 0.0632 |
 | dbytes | 0.5278 | 0.3200 | 0.0416 |
 
-`ct_dst_sport_ltm` is simultaneously the highest-PSI feature in the dataset and a top-5 permutation-importance feature for all four models (rank 1 for LR, rank 3 for NN, rank 4 for RF and XGBoost). It is the biggest generalization risk in the project. By permutation importance, RF, NN, and XGBoost are now tied at 5/10 overlap between top-importance and top-drift features while LR is the least exposed by this measure at 3/10. 
-
+`ct_dst_sport_ltm` is simultaneously the highest-PSI feature in the dataset and a top-5 permutation-importance feature for all four models (rank 1 for LR, rank 3 for NN, rank 4 for RF and XGBoost). It is the biggest generalization risk in the project. By permutation importance, RF, NN, and XGBoost are now tied at 5/10 overlap between top-importance and top-drift features while LR is the least exposed by this measure at 3/10.
 
 ## 6. TTL Ablation (XGBoost)
 
@@ -314,12 +311,11 @@ Gain is small: +0.0018 PR-AUC, +0.0053 recall, +0.0011 precision, +0.0032 accura
 
 A tiny aggregate performance gain (PR-AUC +0.0018) accompanies a large internal shift. `dload` falls from #1 to #16, `ackdat` falls from #2 to #29. TTL values are known in the UNSW-NB15 literature to correlate with attack-generation setup rather than attack behavior, which is consistent with excluding TTL features from the primary models.
 
-
 ## Conclusion
 1. Predictions are driven by destination-byte/load and connection-count features across all models by SHAP (NN additionally leans on `swin`/`sload`; LR on categorical encodings). By permutation importance specifically, Random Forest's own top drivers are `ackdat`, `sbytes`, `state`, `ct_dst_sport_ltm`. `dbytes` and `dload`/`dmean` rank much lower for RF by this method than they do by SHAP because of the SHAP-vs-permutation divergence.
 2. FP/FN cases differ clearly from correctly classified cases on `response_body_len`, `sload`, and window/timing features. The same error pattern shows up independently in both LR and NN.
-3. SHAP confirms the permutation-based rankings for tree models at the top (`ackdat` #1 by both methods for RF) and catches interaction effects further down the list that permutation importance misses — `ct_srv_dst` (XGBoost's #2 SHAP feature but a near bottom-of-list permutation feature) and, for RF, `dload`/`dmean` (SHAP ranks 2 and 7, permutation ranks 13 and 19). 
+3. SHAP confirms the permutation-based rankings for tree models at the top (`ackdat` #1 by both methods for RF) and catches interaction effects further down the list that permutation importance misses — `ct_srv_dst` (XGBoost's #2 SHAP feature but a near bottom-of-list permutation feature) and, for RF, `dload`/`dmean` (SHAP ranks 2 and 7, permutation ranks 13 and 19).
 **Note:** RF's SHAP values are on the probability scale while XGBoost's are on the raw margin/log-odds scale. The rank comparisons are valid, but the underlying SHAP magnitude are not directly comparable between the two models.
-4. Calibration is acceptable in aggregate (Brier < 0.15 for all models) but all four are overconfident in the mid-probability range. XGBoost has the single worst gap, but not the Brier-score outlier (LR). 
+4. Calibration is acceptable in aggregate (Brier < 0.15 for all models) but all four are overconfident in the mid-probability range. XGBoost has the single worst gap, but not the Brier-score outlier (LR).
 5. Distribution drift is the biggest reliability risk. Two-thirds of features drift and the most-drifted feature (`ct_dst_sport_ltm`) is a top-5 permutation-importance feature for every model. By permutation importance, Random Forest, Neural Network, and XGBoost are equally exposed with 5/10 overlap between top-importance and top-drift features. Logistic Regression is the least exposed by this measure (3/10).
 6. The TTL ablation confirms a shortcut-learning risk, supporting the team's existing decision to exclude TTL features from primary models.
