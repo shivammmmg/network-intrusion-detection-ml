@@ -19,8 +19,8 @@
       "true_label_matches_y_test": true
     },
     "random_forest": {
-      "max_abs_diff": 4.440892098500626e-16,
-      "mean_abs_diff": 1.491467234868437e-17,
+      "max_abs_diff": 3.3306690738754696e-16,
+      "mean_abs_diff": 1.4709789058099925e-17,
       "n_rows": 82332,
       "pass": true,
       "prediction_rows": 82332,

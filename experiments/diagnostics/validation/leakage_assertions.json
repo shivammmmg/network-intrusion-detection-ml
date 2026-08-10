@@ -6,7 +6,8 @@
         "src/11_diagnostics_verify.py",
         "src/12_shap_diagnostics.py",
         "src/13_model_diagnostics.py",
-        "src/14_ttl_ablation.py"
+        "src/14_ttl_ablation.py",
+        "src/15_build_report_tables.py"
       ],
       "files_with_fit_calls": [],
       "fit_call_allowlist": [
