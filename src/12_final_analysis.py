@@ -7,7 +7,7 @@ This script performs the following analysis on the finalized models:
 - Distribution-drift analysis (PSI, KS) between training and test (data‑only).
 - TTL-feature ablation using the TTL-included preprocessing artifact (XGBoost only).
 
-It does not alter models or data; it only reads existing artifacts and places analysis outputs in experiments/final_analysis/.
+It does not alter models or data; it only reads existing artifacts and places analysis outputs in experiments/explainability_and_diagnostics/final_analysis/.
 """
 
 import sys
@@ -91,12 +91,11 @@ def load_data(preprocessor_path):
     return X_train, y_train, X_test, y_test, list(feature_names)
 
 
-def load_model_and_predictions(model_name):
+def load_model_and_predictions(model_name, X_test, y_test):
     """Load model and its test prediction CSV"""
     model = joblib.load(MODEL_PATHS[model_name])
-    pred_df = pd.read_csv(PREDICTIONS_PATHS[model_name])
-    y_true = pred_df["true_label"].to_numpy(dtype=int)
-    proba = pred_df["attack_probability"].to_numpy(dtype=float)
+    proba = model.predict_proba(X_test)[:, 1]
+    y_true = y_test.to_numpy(dtype=int) if hasattr(y_test, "to_numpy") else np.asarray(y_test, dtype=int)
     return model, y_true, proba
 
 
@@ -204,9 +203,8 @@ def main():
     perm_importances = {}
     for model_name in MODEL_PATHS.keys():
         print(f"  {model_name}...")
-        model, _, _ = load_model_and_predictions(model_name)
         X_test = X_test_lin if model_name in ["Logistic Regression", "Neural Network"] else X_test_tree
-        # Direct call to permutation_importance (no wrapper)
+        model, _, _ = load_model_and_predictions(model_name, X_test, y_test)
         imp = permutation_importance(
             model, X_test, y_test, n_repeats=5, random_state=RANDOM_STATE,
             scoring=pr_auc_scorer, n_jobs=-1
@@ -223,7 +221,8 @@ def main():
     print("\nComputing Calibration curves and Brier scores for all models:")
     calibration_data = {}
     for model_name in MODEL_PATHS.keys():
-        _, y_true, proba = load_model_and_predictions(model_name)
+        X_test = X_test_lin if model_name in ["Logistic Regression", "Neural Network"] else X_test_tree
+        _, y_true, proba = load_model_and_predictions(model_name, X_test, y_test)
         prob_true, prob_pred = calibration_curve(y_true, proba, n_bins=10, strategy="quantile")
         brier = brier_score_loss(y_true, proba)
         calibration_data[model_name] = {"prob_true": prob_true, "prob_pred": prob_pred, "brier": brier}
@@ -258,7 +257,7 @@ def main():
     # Error profiling for Logistic Regression and Neural Network
     print("\nError profiling for Logistic Regression and Neural Network:")
     for model_name in ["Logistic Regression", "Neural Network"]:
-        _, y_true, proba = load_model_and_predictions(model_name)  # model not used
+        _, y_true, proba = load_model_and_predictions(model_name, X_test_lin, y_test)
         X_test = X_test_lin
         threshold = THRESHOLDS[model_name]
         profile_errors(model_name, X_test, y_true, proba, threshold)

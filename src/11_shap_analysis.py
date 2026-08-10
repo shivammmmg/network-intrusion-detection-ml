@@ -2,7 +2,7 @@
 
 This script creates bar plots, beeswarm plots, and waterfall plots for SHAP values of the trained models.
 
-Outputs are saved to experiments/shap_analysis/figures/.
+Outputs are saved to experiments/explainability_and_diagnostics/shap_analysis/figures/.
 """
 
 from __future__ import annotations
