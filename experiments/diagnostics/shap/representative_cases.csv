@@ -1,0 +1,9 @@
+model,group,sample_index,true_label,attack_probability,threshold,selection_status
+random_forest,TP,498,1,0.99625,0.492968259796183,selected_lowest_sample_index
+random_forest,TN,23380,0,0.0,0.492968259796183,selected_lowest_sample_index
+random_forest,FP,83,0,0.6882366272837201,0.492968259796183,selected_lowest_sample_index
+random_forest,FN,45853,1,0.47685564283893256,0.492968259796183,selected_lowest_sample_index
+xgboost,TP,243,1,0.9970679879188538,0.46306103,selected_lowest_sample_index
+xgboost,TN,8,0,0.0007653298671357334,0.46306103,selected_lowest_sample_index
+xgboost,FP,0,0,0.8184835314750671,0.46306103,selected_lowest_sample_index
+xgboost,FN,283,1,0.20856989920139313,0.46306103,selected_lowest_sample_index

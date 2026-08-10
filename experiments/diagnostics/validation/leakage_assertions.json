@@ -1,0 +1,136 @@
+{
+  "assertions": {
+    "diagnostics_source_contains_no_fit_calls": {
+      "files_checked": [
+        "src/diagnostics_lib.py",
+        "src/11_diagnostics_verify.py",
+        "src/12_shap_diagnostics.py",
+        "src/13_model_diagnostics.py",
+        "src/14_ttl_ablation.py"
+      ],
+      "files_with_fit_calls": [],
+      "fit_call_allowlist": [
+        "14_ttl_ablation.py"
+      ],
+      "pass": true,
+      "uncovered_files": []
+    },
+    "labels_are_binary": {
+      "pass": true,
+      "splits": {
+        "test": {
+          "pass": true,
+          "values": [
+            0,
+            1
+          ]
+        },
+        "train": {
+          "pass": true,
+          "values": [
+            0,
+            1
+          ]
+        },
+        "val": {
+          "pass": true,
+          "values": [
+            0,
+            1
+          ]
+        }
+      }
+    },
+    "locked_thresholds_present_and_in_open_unit_interval": {
+      "invalid_thresholds": {},
+      "missing_models": [],
+      "pass": true,
+      "thresholds": {
+        "logistic_regression": 0.4631204833813834,
+        "neural_network": 0.3454528735910796,
+        "random_forest": 0.492968259796183,
+        "xgboost": 0.46306103
+      }
+    },
+    "prediction_row_counts_match_test_split": {
+      "models": {
+        "logistic_regression": {
+          "pass": true,
+          "prediction_rows": 82332,
+          "test_rows": 82332
+        },
+        "neural_network": {
+          "pass": true,
+          "prediction_rows": 82332,
+          "test_rows": 82332
+        },
+        "random_forest": {
+          "pass": true,
+          "prediction_rows": 82332,
+          "test_rows": 82332
+        },
+        "xgboost": {
+          "pass": true,
+          "prediction_rows": 82332,
+          "test_rows": 82332
+        }
+      },
+      "pass": true
+    },
+    "preprocessors_fitted_and_feature_counts_match_manifest": {
+      "artifacts": {
+        "preprocess_linear.joblib": {
+          "actual_n_features_out": 66,
+          "expected_n_features_out": 66,
+          "pass": true
+        },
+        "preprocess_linear_with_ttl.joblib": {
+          "actual_n_features_out": 69,
+          "expected_n_features_out": 69,
+          "pass": true
+        },
+        "preprocess_tree.joblib": {
+          "actual_n_features_out": 39,
+          "expected_n_features_out": 39,
+          "pass": true
+        },
+        "preprocess_tree_with_ttl.joblib": {
+          "actual_n_features_out": 42,
+          "expected_n_features_out": 42,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "split_feature_and_label_row_counts_match": {
+      "pass": true,
+      "splits": {
+        "test": {
+          "X_rows": 82332,
+          "pass": true,
+          "y_rows": 82332
+        },
+        "train": {
+          "X_rows": 79685,
+          "pass": true,
+          "y_rows": 79685
+        },
+        "val": {
+          "X_rows": 19922,
+          "pass": true,
+          "y_rows": 19922
+        }
+      }
+    },
+    "split_rows_pairwise_disjoint": {
+      "index_identity": "hash of persisted feature and label values",
+      "overlap_counts": {
+        "train_test": 0,
+        "train_val": 0,
+        "val_test": 0
+      },
+      "pass": true
+    }
+  },
+  "pass": true
+}

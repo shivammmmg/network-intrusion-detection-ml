@@ -1,0 +1,32 @@
+{
+  "packages": {
+    "numpy": {
+      "actual": "2.4.6",
+      "expected": "2.5.1",
+      "matches": false,
+      "severity": "warning"
+    },
+    "pandas": {
+      "actual": "3.0.3",
+      "expected": "3.0.3",
+      "matches": true,
+      "severity": "ok"
+    },
+    "scikit-learn": {
+      "actual": "1.9.0",
+      "expected": "1.9.0",
+      "matches": true,
+      "severity": "ok"
+    },
+    "xgboost": {
+      "actual": "3.3.0",
+      "expected": "3.3.0",
+      "matches": true,
+      "severity": "ok"
+    }
+  },
+  "pass": true,
+  "random_state_actual": 42,
+  "random_state_expected": 42,
+  "random_state_matches": true
+}

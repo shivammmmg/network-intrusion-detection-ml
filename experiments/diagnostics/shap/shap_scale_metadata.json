@@ -1,0 +1,61 @@
+{
+  "background_size": 100,
+  "environment_decision": {
+    "artifact_prediction_gate_pass": true,
+    "decision": "SHAP 0.52.0 requires numba; numba resolves NumPy 2.4.6. The frozen manifest remains unchanged.",
+    "max_abs_diff": {
+      "logistic_regression": 5.162537064506978e-15,
+      "neural_network": 2.220446049250313e-15,
+      "random_forest": 4.440892098500626e-16,
+      "xgboost": 2.9800415024539006e-08
+    },
+    "numpy_manifest_version": "2.5.1",
+    "numpy_runtime_version": "2.4.6",
+    "shap_verification_note": "XGBoost SHAP values were bit-identical across recomputations. The 1e-6 CSV verification tolerance accommodates float32 CSV round-trip precision (about 2.4e-7), not model non-determinism."
+  },
+  "generated_at_utc": "2026-08-10T16:10:26.278978Z",
+  "model_sample_sizes": {
+    "random_forest": 500,
+    "xgboost": 82332
+  },
+  "models": {
+    "random_forest": {
+      "additivity_error_distribution": {
+        "median": 1.3490865924392637e-09,
+        "p95": 4.107649446971609e-09,
+        "p99": 0.0012499984638890084,
+        "rows_exceeding_1e-3": 7
+      },
+      "additivity_interpretation": "The small median error and sparse >1e-3 tail are consistent with Random Forest probability leaf quantization.",
+      "additivity_target": "predict_proba_positive_class",
+      "attempted_feature_perturbation": "interventional",
+      "attempted_model_output": "probability",
+      "fallback_used": false,
+      "max_additivity_error": 0.0075000083672869255,
+      "mean_additivity_error": 3.250160199929664e-05,
+      "resolved_feature_perturbation": "interventional",
+      "resolved_model_output": "probability",
+      "scale": "probability"
+    },
+    "xgboost": {
+      "additivity_error_distribution": {
+        "median": 1.2256205081939697e-06,
+        "p95": 4.49642539024353e-06,
+        "p99": 5.99399209022522e-06,
+        "rows_exceeding_1e-3": 0
+      },
+      "additivity_target": "predict_output_margin",
+      "attempted_feature_perturbation": "interventional",
+      "attempted_model_output": "probability",
+      "fallback_exception": "NotImplementedError: Categorical split is not yet supported. You can still use TreeExplainer with `feature_perturbation=tree_path_dependent`.",
+      "fallback_used": true,
+      "max_additivity_error": 1.171603798866272e-05,
+      "mean_additivity_error": 1.6099460191689155e-06,
+      "resolved_feature_perturbation": "tree_path_dependent",
+      "resolved_model_output": "raw",
+      "scale": "raw"
+    }
+  },
+  "random_state": 42,
+  "verify_tolerance": 1e-06
+}
