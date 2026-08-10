@@ -83,12 +83,12 @@ generated_from: experiments/diagnostics/
 
 ## T4 — Calibration summary
 
-| model | brier_score | expected_calibration_error | worst_bin | worst_bin_gap | worst_bin_count |
-| --- | --- | --- | --- | --- | --- |
-| random_forest | 0.0843 | 0.0872 | 2 | -0.3260 | 8233 |
-| xgboost | 0.0888 | 0.0942 | 5 | -0.4675 | 8233 |
-| neural_network | 0.0976 | 0.0845 | 5 | -0.3381 | 8233 |
-| logistic_regression | 0.1406 | 0.0929 | 6 | -0.3151 | 8234 |
+| model | brier_score | expected_calibration_error | worst_bin | worst_bin_mean_predicted | worst_bin_gap | worst_bin_count |
+| --- | --- | --- | --- | --- | --- | --- |
+| random_forest | 0.0843 | 0.0872 | 2 | 0.5337 | -0.3260 | 8233 |
+| xgboost | 0.0888 | 0.0942 | 5 | 0.8586 | -0.4675 | 8233 |
+| neural_network | 0.0976 | 0.0845 | 5 | 0.7474 | -0.3381 | 8233 |
+| logistic_regression | 0.1406 | 0.0929 | 6 | 0.8444 | -0.3151 | 8234 |
 
 ## T5 — Drift summary
 

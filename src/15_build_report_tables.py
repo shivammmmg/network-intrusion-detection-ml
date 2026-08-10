@@ -142,6 +142,25 @@ def _build_error_summary(summary: dict[str, Any]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _worst_bin_mean_predicted(model_name: str, worst_bin: int) -> float:
+    """Look up the mean predicted probability of a model's worst calibration bin.
+
+    Bin indices are per-model quantile bins, so the index alone is not
+    comparable across models. Surfacing the bin's mean predicted probability
+    gives the report a comparable location for each worst bin.
+    """
+    bins = _read_csv(
+        DIAGNOSTICS_DIR / "calibration" / f"calibration_bins_{model_name}.csv",
+        ["bin", "mean_predicted", "observed_frequency", "count", "gap"],
+    )
+    matches = bins.loc[bins["bin"] == worst_bin]
+    if len(matches) != 1:
+        raise ValueError(
+            f"calibration_bins_{model_name}.csv does not contain exactly one row for bin {worst_bin}"
+        )
+    return float(matches.iloc[0]["mean_predicted"])
+
+
 def _build_calibration_summary(summary: dict[str, Any]) -> pd.DataFrame:
     """Build T4 from verified calibration summary values."""
     models = summary.get("models")
@@ -159,6 +178,7 @@ def _build_calibration_summary(summary: dict[str, Any]) -> pd.DataFrame:
                 "brier_score": model["brier_score"],
                 "expected_calibration_error": model["expected_calibration_error"],
                 "worst_bin": worst["bin"],
+                "worst_bin_mean_predicted": _worst_bin_mean_predicted(name, int(worst["bin"])),
                 "worst_bin_gap": worst["gap"],
                 "worst_bin_count": worst["count"],
             }

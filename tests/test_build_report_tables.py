@@ -83,6 +83,38 @@ class ReportTableTransformTests(unittest.TestCase):
         self.assertFalse(table["scale"].isna().any())
 
 
+class WorstBinLookupTests(unittest.TestCase):
+    BINS = pd.DataFrame(
+        {
+            "bin": [1, 2, 3],
+            "mean_predicted": [0.05, 0.53, 0.94],
+            "observed_frequency": [0.01, 0.21, 0.83],
+            "count": [100, 200, 300],
+            "gap": [-0.04, -0.32, -0.11],
+        }
+    )
+
+    def _with_stub_bins(self, bins: pd.DataFrame):
+        original = MODULE._read_csv
+        MODULE._read_csv = lambda path, columns: bins.copy()
+        self.addCleanup(lambda: setattr(MODULE, "_read_csv", original))
+
+    def test_returns_mean_predicted_of_the_named_bin(self) -> None:
+        self._with_stub_bins(self.BINS)
+        self.assertAlmostEqual(MODULE._worst_bin_mean_predicted("any_model", 2), 0.53, places=12)
+
+    def test_bin_index_alone_does_not_determine_probability(self) -> None:
+        # Bin 2 sits at a different predicted probability under a different
+        # binning, which is why the report cannot compare bin indices directly.
+        self._with_stub_bins(self.BINS.assign(mean_predicted=[0.10, 0.86, 0.99]))
+        self.assertAlmostEqual(MODULE._worst_bin_mean_predicted("other_model", 2), 0.86, places=12)
+
+    def test_missing_bin_raises(self) -> None:
+        self._with_stub_bins(self.BINS)
+        with self.assertRaises(ValueError):
+            MODULE._worst_bin_mean_predicted("any_model", 99)
+
+
 class MarkdownVerificationTests(unittest.TestCase):
     def _run_against_file(self, on_disk: str, rebuilt: str) -> bool:
         original = MODULE.MARKDOWN_PATH
