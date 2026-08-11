@@ -105,8 +105,10 @@ development pool is 51.6% normal: validation accuracy 0.516, F1 0.000, PR-AUC
 clear the baseline on F1/PR-AUC, not accuracy.
 
 ## Reproducibility
-scikit-learn 1.9.0, pandas 3.0.3, numpy 2.5.1, xgboost 3.3.0, all pinned in
-`requirements.txt`. `RANDOM_STATE=42` throughout. Raw-file SHA-256 in
+The final environment pins scikit-learn 1.9.0, pandas 3.0.3, numpy 2.4.6, and
+xgboost 3.3.0 in `requirements.txt`; `artifacts/manifest.json` records NumPy
+2.5.1 as the environment that produced the frozen artifacts. `RANDOM_STATE=42`
+throughout. Raw-file SHA-256 in
 `artifacts/manifest.json` (training `bec7dd5ec88dc2a0`, testing `734fe6642edf758f`).
 Raw data mirror: `github.com/Nir-J/ML-Projects`, `UNSW-Network_Packet_Classification/`,
 fetched and checked by `src/00_download.py`. Rebuild with `00` through `04` in order.

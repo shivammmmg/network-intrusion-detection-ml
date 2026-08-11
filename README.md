@@ -6,7 +6,7 @@ to detect attack traffic while limiting false-positive alerts, with particular
 attention to data leakage, class imbalance, explainability, calibration, and
 distribution drift.
 
-> **Project status:** complete. The shared data workflow, leakage audit, fixed
+> **Technical project status:** complete. The shared data workflow, leakage audit, fixed
 > train/validation/test split, preprocessing artifacts, and baselines are
 > implemented; all four models (Logistic Regression, Neural Network, Random
 > Forest, XGBoost) are finalized; standardized threshold selection and frozen-test
@@ -121,6 +121,9 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
+
+On Windows PowerShell, activate the environment with
+`.venv\Scripts\Activate.ps1` instead of `source .venv/bin/activate`.
 
 The numbered scripts run in order from the project root. The first block rebuilds
 the shared data foundation; the download step needs internet access.
@@ -385,6 +388,9 @@ input hashes, preprocessing variants, and output feature counts. Generated
 documentation records the shared split and baseline measurements. Exact fresh
 Neural Network training may vary by Python, operating-system, and BLAS
 environment; use the committed artifact verification for the saved handoff.
+`requirements-lock.txt` is the fuller cross-platform environment capture; its
+additional `tzdata==2026.3` is pandas' conditional Windows dependency, not a
+package imported by this project.
 
 ### Verified diagnostics
 

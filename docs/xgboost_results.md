@@ -144,10 +144,13 @@ XGBoost JSON formats.
 - `experiments/xgboost/metrics.json`
 - `experiments/xgboost/README.md`
 
-## Limitations and deferred analysis
+## Limitations and finalized downstream analysis
 
 Selection is based on one fixed validation split, and the local test metrics
 are reference outputs rather than a basis for tuning. No claims about causal
-performance differences are made here. Threshold analysis, SHAP, calibration,
-drift analysis, efficiency benchmarking, bootstrap analysis, and TTL ablation
-are intentionally deferred to later work.
+performance differences are made here. The finalized
+[standardized evaluation](standardized_model_evaluation.md) covers threshold
+analysis and cross-model comparison; the [diagnostics report](diagnostics_report.md)
+covers SHAP, calibration, drift, and TTL ablation; and the
+[RF/XGBoost advanced analysis](rf_xgboost_advanced_analysis.md) covers
+efficiency benchmarking and bootstrap uncertainty for the two tree models.

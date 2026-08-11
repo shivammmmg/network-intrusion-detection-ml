@@ -215,9 +215,9 @@ labels a meaningful number of normal rows as attacks. This reflects the
 project's operational trade-off between detecting attacks and limiting false
 alarms.
 
-The reported predictions use the default 0.5 threshold. Later threshold
-analysis can examine whether a different operating point improves the balance
-between recall and false positives; that analysis is outside this experiment.
+The reported predictions use the default 0.5 threshold. The finalized
+[standardized evaluation](standardized_model_evaluation.md) also reports
+validation-selected locked thresholds and their recall/false-positive trade-off.
 
 ## 12. Validation vs Test Gap
 
@@ -230,7 +230,7 @@ Ranking performance remains strong, with only a modest PR-AUC difference. The
 threshold-based accuracy and precision changed more substantially. Differences
 in the development and test distributions may contribute, but this experiment
 does not establish a single cause. Detailed drift and error analysis is
-reserved for later work.
+documented in the finalized [diagnostics report](diagnostics_report.md).
 
 ## 13. Reproducibility
 

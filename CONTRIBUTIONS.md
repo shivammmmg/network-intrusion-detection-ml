@@ -91,11 +91,11 @@ by the team was developed and verified by Shivam and is the version merged into
 
 ## Shared team work
 
-The following are shared across the team. Items marked *in progress* are not
+The following are shared across the team. Items marked *not started* are not
 yet complete at the time of writing.
 
-- Final written report — *in progress*.
-- Presentation and video walkthrough — *in progress*.
+- Final written report — *not started*.
+- Presentation and video walkthrough — *not started*.
 - Cross-review of one another's outputs, and integration of the model,
   evaluation and diagnostics stages into a single consistent pipeline —
   ongoing throughout the project.

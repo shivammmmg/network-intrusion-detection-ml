@@ -133,7 +133,8 @@ regenerated from `src/06_random_forest.py`.
 
 Note that `experiments/xgboost/xgboost_model.json` and
 `artifacts/xgboost.joblib` are two serializations of the **same** finalized
-XGBoost model and produce bit-identical predictions. Both are kept deliberately;
+XGBoost model and produce numerically equivalent predictions within the Stage 0
+verification tolerance. Both are kept deliberately;
 either could be dropped if size becomes critical, but keeping both is what allows
 the model to be loaded without a joblib/scikit-learn version dependency.
 
