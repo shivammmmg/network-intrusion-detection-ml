@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { api, ApiError } from "../lib/api";
-import { cloneRecord, hasDisagreement, isModified, scenarioLabel } from "../lib/presentation";
+import { cloneRecord, hasDisagreement, isModified, percentage, scenarioLabel } from "../lib/presentation";
 import type { DemoExample, FeatureRecord, HealthResponse, ModelMetadata, PredictionResult, SchemaResponse } from "../lib/types";
 import { PredictionCard } from "./PredictionCard";
 
@@ -25,17 +25,17 @@ const snapshotMetrics = [
 const methodology = [
   "TTL leakage fields excluded",
   "Validation-selected thresholds",
-  "Frozen finalized artifacts",
+  "Finalized model artifacts",
   "No retraining"
 ];
 
 const pipelineSteps = ["Data", "Preprocessing", "Four Models", "Threshold Analysis", "Final Evaluation"];
 
 const offlineModels = [
-  { abbreviation: "LR", name: "Logistic Regression", tone: "cyan" },
-  { abbreviation: "NN", name: "Neural Network", tone: "violet" },
-  { abbreviation: "RF", name: "Random Forest", tone: "indigo" },
-  { abbreviation: "XG", name: "XGBoost", tone: "teal" }
+  { id: "logistic_regression", abbreviation: "LR", name: "Logistic Regression", category: "Linear model", tone: "cyan" },
+  { id: "neural_network", abbreviation: "NN", name: "Neural Network", category: "Neural network", tone: "violet" },
+  { id: "random_forest", abbreviation: "RF", name: "Random Forest", category: "Tree ensemble", tone: "indigo" },
+  { id: "xgboost", abbreviation: "XG", name: "XGBoost", category: "Boosted tree ensemble", tone: "teal" }
 ];
 
 function formValue(value: FeatureRecord[string] | undefined): string {
@@ -69,6 +69,10 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [predicting, setPredicting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [detailsModelId, setDetailsModelId] = useState<string | null>(null);
+  const detailsDialogRef = useRef<HTMLElement>(null);
+  const detailsCloseRef = useRef<HTMLButtonElement>(null);
+  const detailsTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     void Promise.allSettled([api.health(), api.models(), api.schema(), api.examples()] as const)
@@ -98,10 +102,60 @@ export function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (!detailsModelId) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusFrame = window.requestAnimationFrame(() => detailsCloseRef.current?.focus());
+
+    function handleDialogKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setDetailsModelId(null);
+        return;
+      }
+
+      if (event.key !== "Tab" || !detailsDialogRef.current) return;
+      const focusableElements = Array.from(
+        detailsDialogRef.current.querySelectorAll<HTMLElement>(
+          "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
+        )
+      );
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleDialogKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleDialogKeyDown);
+      document.body.style.overflow = previousOverflow;
+      detailsTriggerRef.current?.focus();
+    };
+  }, [detailsModelId]);
+
   const modified = useMemo(() => isModified(record, selectedExample), [record, selectedExample]);
   const serviceReady = Boolean(health?.ready);
   const workspaceReady = serviceReady && Boolean(schema);
   const selectedModel = models.find((model) => model.id === modelId);
+  const detailsModel = offlineModels.find((model) => model.id === detailsModelId);
+  const detailsMetadata = models.find((model) => model.id === detailsModelId);
+  const detailsResult = compareResults.find((result) => result.model === detailsModelId);
+
+  function openModelDetails(modelIdToOpen: string, trigger: HTMLButtonElement) {
+    detailsTriggerRef.current = trigger;
+    setDetailsModelId(modelIdToOpen);
+  }
 
   function chooseExample(example: DemoExample) {
     setSelectedExample(example);
@@ -232,12 +286,12 @@ export function Dashboard() {
           {!singleResult && compareResults.length === 0 && (
             <div className="empty-state">
               <span className="empty-state-mark" aria-hidden="true" />
-              <h3>Ready for frozen inference</h3>
+              <h3>Ready for finalized inference</h3>
               <p>Select a curated record, inspect its active features if needed, then run {view === "compare" ? "all four models" : "the selected model"}.</p>
               {selectedExample && <p>Selected scenario: <b>{scenarioLabel[selectedExample.scenario] ?? selectedExample.scenario}</b></p>}
             </div>
           )}
-          <p className="probability-caveat">P(attack) is the frozen model score for this dataset. It is not a calibrated real-world attack likelihood.</p>
+          <p className="probability-caveat">P(attack) is the finalized model score for this dataset. It is not a calibrated real-world attack likelihood.</p>
         </div>
       </section>
     );
@@ -258,11 +312,11 @@ export function Dashboard() {
         </nav>
 
         <div className={`service-status ${serviceReady ? "ready" : "offline"}`} role="status" aria-live="polite">
-          <span aria-hidden="true" />{serviceReady ? "Model service ready" : "Model service offline"}
+          <span aria-hidden="true" />{serviceReady ? "Model service ready" : "Model service unavailable"}
         </div>
       </header>
 
-      {loading && <section className="loading-panel"><div className="spinner" />Loading frozen model metadata…</section>}
+      {loading && <section className="loading-panel"><div className="spinner" />Loading finalized model metadata…</section>}
 
       {!loading && view === "overview" && (
         <section className="overview-page">
@@ -290,12 +344,12 @@ export function Dashboard() {
                 <p className="micro-label">Methodology safeguards</p>
                 <div>{methodology.map((item) => <span key={item}><i aria-hidden="true" />{item}</span>)}</div>
               </div>
-              <p className="source-sha">Frozen source <span>{health?.frozen_source_sha.slice(0, 8) ?? "loading"}</span></p>
+              <p className="source-sha">Evaluation snapshot <span>{health?.frozen_source_sha.slice(0, 8) ?? "loading"}</span></p>
             </aside>
           </div>
 
           <section className="pipeline-panel" aria-labelledby="pipeline-title">
-            <div className="pipeline-heading"><div><p className="eyebrow">Evaluation workflow</p><h2 id="pipeline-title">Project Pipeline</h2></div><span>Frozen, read-only methodology</span></div>
+            <div className="pipeline-heading"><div><p className="eyebrow">Evaluation workflow</p><h2 id="pipeline-title">Project Pipeline</h2></div><span>Finalized evaluation workflow</span></div>
             <div className="pipeline-steps">
               {pipelineSteps.map((step, index) => (
                 <div className="pipeline-step" key={step}>
@@ -318,9 +372,9 @@ export function Dashboard() {
             <section className="offline-detection-grid">
               <article className="offline-input-card">
                 <div className="panel-heading"><div><p className="eyebrow">Input contract</p><h2>Network Flow Input</h2></div><span className="offline-chip">Offline preview</span></div>
-                <p className="panel-copy">Feature controls become available when the frozen artifact service is restored.</p>
+                <p className="panel-copy">Feature controls become available when the model artifact service is restored.</p>
                 <div className="offline-fields">
-                  {["Protocol", "Service", "Connection state"].map((field) => <label key={field}>{field}<select disabled><option>Service offline</option></select></label>)}
+                  {["Protocol", "Service", "Connection state"].map((field) => <label key={field}>{field}<select disabled><option>Model service unavailable</option></select></label>)}
                 </div>
                 <div className="offline-feature-row"><span>Advanced feature editor</span><b>39 fields</b></div>
                 <button className="primary-button" disabled>Run Prediction</button>
@@ -343,20 +397,82 @@ export function Dashboard() {
           <header className="page-heading"><p className="eyebrow">Shared evaluation protocol</p><h2>Model Comparison</h2><p>Compare the four finalized classifiers under the shared evaluation protocol.</p></header>
           {!serviceReady && <ServiceNotice />}
           {serviceReady && error && <p className="inline-error" role="alert">{error}</p>}
-          {workspaceReady ? renderReadyWorkspace() : (
-            <section className="offline-model-grid" aria-label="Finalized project models">
-              {offlineModels.map((model, index) => (
-                <article className={`offline-model-card ${model.tone}`} key={model.name}>
-                  <div className="model-card-top"><span className="model-monogram" aria-hidden="true">{model.abbreviation}</span><span className="model-index">0{index + 1}</span></div>
-                  <p className="micro-label">Finalized classifier</p>
-                  <h3>{model.name}</h3>
-                  <p>Results unavailable while model service is offline.</p>
-                  <div className="model-card-status"><span aria-hidden="true" />Awaiting artifact service</div>
-                </article>
-              ))}
-            </section>
-          )}
+          <section className="model-grid" aria-label="Finalized project models">
+            {offlineModels.map((model, index) => (
+              <button
+                type="button"
+                className={`model-card ${model.tone}`}
+                key={model.id}
+                onClick={(event) => openModelDetails(model.id, event.currentTarget)}
+                aria-haspopup="dialog"
+              >
+                <span className="model-card-top"><span className="model-monogram" aria-hidden="true">{model.abbreviation}</span><span className="model-index">0{index + 1}</span></span>
+                <span className="micro-label">{model.category}</span>
+                <span className="model-card-name">{model.name}</span>
+                <span className="model-card-copy">{serviceReady ? "Inspect finalized model metadata and evaluation settings." : "Evaluation results are temporarily unavailable."}</span>
+                <span className="model-card-action">View model details <i aria-hidden="true" /></span>
+              </button>
+            ))}
+          </section>
+          {workspaceReady && renderReadyWorkspace()}
         </section>
+      )}
+
+      {detailsModel && (
+        <div
+          className="model-dialog-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setDetailsModelId(null);
+          }}
+        >
+          <section
+            className={`model-dialog ${detailsModel.tone}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="model-dialog-title"
+            aria-describedby="model-dialog-description"
+            ref={detailsDialogRef}
+          >
+            <header className="model-dialog-header">
+              <div className="model-dialog-heading">
+                <span className="model-monogram" aria-hidden="true">{detailsModel.abbreviation}</span>
+                <div><p className="micro-label">{detailsModel.category}</p><h2 id="model-dialog-title">{detailsModel.name}</h2></div>
+              </div>
+              <button className="model-dialog-close" type="button" onClick={() => setDetailsModelId(null)} ref={detailsCloseRef} aria-label="Close model details"><span aria-hidden="true" /></button>
+            </header>
+
+            <div className={`model-service-summary ${serviceReady ? "ready" : "offline"}`}>
+              <span aria-hidden="true" />
+              <div><p>Current service status</p><strong>{serviceReady ? "Model service ready" : "Live inference unavailable"}</strong></div>
+            </div>
+
+            <div className="model-dialog-body" id="model-dialog-description">
+              <section>
+                <p className="eyebrow">Finalized project configuration</p>
+                <dl className="model-metadata-list">
+                  <div><dt>Model category</dt><dd>{detailsModel.category}</dd></div>
+                  <div><dt>Input contract</dt><dd>39 primary features</dd></div>
+                  <div><dt>Evaluation workflow</dt><dd>Validation-selected locked threshold; no retraining</dd></div>
+                  {detailsMetadata && <div><dt>Transformed features</dt><dd>{detailsMetadata.transformed_feature_count}</dd></div>}
+                  {detailsMetadata && <div><dt>Locked threshold</dt><dd>{percentage(detailsMetadata.threshold)}</dd></div>}
+                </dl>
+              </section>
+
+              <section className="model-evaluation-summary">
+                <p className="eyebrow">Evaluation information</p>
+                {detailsMetadata ? (
+                  <>
+                    <p>{detailsMetadata.caveat}</p>
+                    <p className="model-probability-semantics">{detailsMetadata.probability_semantics}</p>
+                    {detailsResult && <p className="model-result-note">Current comparison: <strong>{detailsResult.label === "attack" ? "Attack" : "Normal"}</strong> at {percentage(detailsResult.attack_probability)} P(attack).</p>}
+                  </>
+                ) : (
+                  <p>Evaluation results are temporarily unavailable while the model artifact service is offline.</p>
+                )}
+              </section>
+            </div>
+          </section>
+        </div>
       )}
     </main>
   );
