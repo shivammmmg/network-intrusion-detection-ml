@@ -18,7 +18,7 @@ export function PredictionCard({ result, model, example, modified }: PredictionC
     <article className={`prediction-card ${attack ? "attack" : "normal"}`}>
       <div className="card-topline">
         <div>
-          <p className="eyebrow">{model?.family ?? "frozen"} model</p>
+          <p className="eyebrow">{model?.family ?? "finalized"} model</p>
           <h3>{model?.display_name ?? result.model}</h3>
         </div>
         <span className={`status-pill ${attack ? "attack" : "normal"}`}>{attack ? "Attack" : "Normal"}</span>

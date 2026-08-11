@@ -51,7 +51,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) }
     });
   } catch {
-    throw new ApiError("Model service is unavailable. Check that the FastAPI backend is running.");
+    throw new ApiError("Model service is unavailable. Live inference cannot be reached right now.");
   }
 
   const body: unknown = await response.json().catch(() => ({}));

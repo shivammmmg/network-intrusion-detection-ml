@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Network Intrusion Detection | Four-Model Demo",
-  description: "Read-only interactive interface for frozen EECS 3404 model artifacts."
+  description: "Interactive dashboard for finalized EECS 3404 model artifacts."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
