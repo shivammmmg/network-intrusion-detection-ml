@@ -1,0 +1,3 @@
+# Install root requirements first. These packages are API-only additions.
+fastapi>=0.115,<1
+uvicorn>=0.30,<1

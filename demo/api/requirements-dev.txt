@@ -1,0 +1,3 @@
+# Install root requirements and requirements.txt first.
+pytest>=8
+httpx>=0.27,<1
