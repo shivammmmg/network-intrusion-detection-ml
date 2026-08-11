@@ -250,6 +250,8 @@ accuracy.
 |---|---|
 | [`docs/standardized_model_evaluation.md`](docs/standardized_model_evaluation.md) | Validation-only threshold selection, frozen-test comparison across all four models, and the final model conclusion |
 | [`docs/diagnostics_report.md`](docs/diagnostics_report.md) | SHAP explainability, permutation importance, error analysis, calibration, distribution drift, and the TTL ablation |
+| [`docs/logistic_regression_results.md`](docs/logistic_regression_results.md) | Logistic Regression tuning history and finalized configuration |
+| [`docs/neural_network_results.md`](docs/neural_network_results.md) | Neural Network architecture, training setup, and artifact verification |
 | [`docs/random_forest_results.md`](docs/random_forest_results.md) | Random Forest tuning history and finalized configuration |
 | [`docs/xgboost_results.md`](docs/xgboost_results.md) | XGBoost tuning history and finalized configuration |
 
@@ -319,6 +321,8 @@ Each `experiments/<model>/test_predictions.csv` contains `sample_index`,
 │   └── diagnostics/               # Verified explainability and diagnostics outputs
 ├── docs/                          # Data card, EDA, baselines, results, reports
 ├── TEAM_RESPONSIBILITIES.md        # Team ownership, deliverables, and handoffs
+├── CONTRIBUTIONS.md                # What each team member contributed
+├── SUBMISSION_CHECKLIST.md         # Packaging notes for the final submission
 ├── requirements.txt
 └── EECS 3404 Major Project Idea.pdf
 ```
