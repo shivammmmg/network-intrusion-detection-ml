@@ -1,5 +1,6 @@
 import type { DemoExample, ModelMetadata, PredictionResult } from "../lib/types";
 import { correctness, percentage } from "../lib/presentation";
+import { ProbabilityMeter } from "./ProbabilityMeter";
 
 interface PredictionCardProps {
   result: PredictionResult;
@@ -11,33 +12,42 @@ interface PredictionCardProps {
 export function PredictionCard({ result, model, example, modified }: PredictionCardProps) {
   const attack = result.prediction === 1;
   const verdict = !modified && example ? correctness(result, example) : null;
-  const probabilityStyle = { width: `${Math.min(100, Math.max(0, result.attack_probability * 100))}%` };
-  const thresholdStyle = { left: `${result.threshold * 100}%` };
+  const marginPts = (result.attack_probability - result.threshold) * 100;
 
   return (
-    <article className={`prediction-card ${attack ? "attack" : "normal"}`}>
-      <div className="card-topline">
+    <article className={`prediction-card ${attack ? "is-attack" : "is-normal"}`}>
+      <header className="result-head">
         <div>
-          <p className="eyebrow">{model?.family ?? "finalized"} model</p>
+          <p className="result-family">{model?.family ?? "finalized"} model</p>
           <h3>{model?.display_name ?? result.model}</h3>
         </div>
-        <span className={`status-pill ${attack ? "attack" : "normal"}`}>{attack ? "Attack" : "Normal"}</span>
-      </div>
-      <div className="probability-block">
-        <span>Attack probability</span>
-        <strong>{percentage(result.attack_probability)}</strong>
-      </div>
-      <div className="threshold-track" aria-label={`Probability ${percentage(result.attack_probability)}, threshold ${percentage(result.threshold)}`}>
-        <div className="track-fill" style={probabilityStyle} />
-        <div className="threshold-marker" style={thresholdStyle}><span>threshold</span></div>
-      </div>
-      <div className="metric-row"><span>Locked threshold</span><b>{percentage(result.threshold)}</b></div>
-      <p className="card-explanation">
+        <span className={`verdict-tag ${attack ? "is-attack" : "is-normal"}`}>{attack ? "Attack" : "Normal"}</span>
+      </header>
+
+      <ProbabilityMeter probability={result.attack_probability} threshold={result.threshold} />
+
+      <dl className="result-metrics">
+        <div>
+          <dt>P(attack)</dt>
+          <dd>{percentage(result.attack_probability)}</dd>
+        </div>
+        <div>
+          <dt>Locked threshold</dt>
+          <dd>{percentage(result.threshold)}</dd>
+        </div>
+        <div>
+          <dt>Margin</dt>
+          <dd>{marginPts >= 0 ? "+" : ""}{marginPts.toFixed(1)} pts</dd>
+        </div>
+      </dl>
+
+      <p className="result-note">
         {attack
-          ? "Attack is predicted because P(attack) is at or above this model’s validation-selected locked threshold."
-          : "Normal is predicted because P(attack) is below this model’s validation-selected locked threshold."}
+          ? "Attack predicted: P(attack) is at or above this model's validation-selected locked threshold."
+          : "Normal predicted: P(attack) is below this model's validation-selected locked threshold."}
       </p>
-      {verdict && <p className={`correctness ${verdict === "Correct" ? "correct" : "incorrect"}`}>{verdict}</p>}
+
+      {verdict && <p className={`result-verdict ${verdict === "Correct" ? "is-correct" : "is-incorrect"}`}>{verdict}</p>}
     </article>
   );
 }

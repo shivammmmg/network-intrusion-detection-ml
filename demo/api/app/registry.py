@@ -25,7 +25,7 @@ MODEL_SPECS = (
     ModelSpec("logistic_regression", "Logistic Regression", "linear", 66, "Linear baseline with one-hot categories."),
     ModelSpec("neural_network", "Neural Network", "linear", 66, "Saved artifact is served; fresh training is environment-sensitive."),
     ModelSpec("random_forest", "Random Forest", "tree", 39, "Largest artifact; uses ordinal categorical encoding."),
-    ModelSpec("xgboost", "XGBoost", "tree", 39, "Saved joblib serialization is the Stage 0-verified serving artifact."),
+    ModelSpec("xgboost", "XGBoost", "tree", 39, "Served from XGBoost's native JSON model format for cross-platform loading; predictions are numerically identical to the Stage 0-verified joblib artifact."),
 )
 
 

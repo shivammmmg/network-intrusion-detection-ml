@@ -1,59 +1,23 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { api, ApiError } from "../lib/api";
-import { cloneRecord, hasDisagreement, isModified, percentage, scenarioLabel } from "../lib/presentation";
+import { cloneRecord, isModified } from "../lib/presentation";
+import { MODEL_DISPLAY } from "../lib/modelDisplay";
 import type { DemoExample, FeatureRecord, HealthResponse, ModelMetadata, PredictionResult, SchemaResponse } from "../lib/types";
-import { PredictionCard } from "./PredictionCard";
 
-type View = "overview" | "live" | "compare";
+import { AppHeader } from "./AppHeader";
+import { ServiceBanner } from "./ServiceBanner";
+import { OverviewPanel } from "./OverviewPanel";
+import { LiveDetectionWorkspace } from "./live/LiveDetectionWorkspace";
+import { CompareWorkspace } from "./compare/CompareWorkspace";
+import { OfflineWorkspaceNotice } from "./OfflineWorkspaceNotice";
+import { ModelDetailsDialog } from "./ModelDetailsDialog";
+import { AnalysisPanel } from "./AnalysisPanel";
 
-const navigation: Array<{ id: View; label: string }> = [
-  { id: "overview", label: "Overview" },
-  { id: "live", label: "Live Detection" },
-  { id: "compare", label: "Compare Models" }
-];
-
-const snapshotMetrics = [
-  { value: "4", label: "Models" },
-  { value: "39", label: "Primary Features" },
-  { value: "Binary", label: "Classification" },
-  { value: "UNSW-NB15", label: "Dataset" }
-];
-
-const methodology = [
-  "TTL leakage fields excluded",
-  "Validation-selected thresholds",
-  "Finalized model artifacts",
-  "No retraining"
-];
-
-const pipelineSteps = ["Data", "Preprocessing", "Four Models", "Threshold Analysis", "Final Evaluation"];
-
-const offlineModels = [
-  { id: "logistic_regression", abbreviation: "LR", name: "Logistic Regression", category: "Linear model", tone: "cyan" },
-  { id: "neural_network", abbreviation: "NN", name: "Neural Network", category: "Neural network", tone: "violet" },
-  { id: "random_forest", abbreviation: "RF", name: "Random Forest", category: "Tree ensemble", tone: "indigo" },
-  { id: "xgboost", abbreviation: "XG", name: "XGBoost", category: "Boosted tree ensemble", tone: "teal" }
-];
-
-function formValue(value: FeatureRecord[string] | undefined): string {
-  return typeof value === "number" && Number.isNaN(value) ? "" : String(value ?? "");
-}
-
-function ServiceNotice() {
-  return (
-    <section className="service-notice" role="status">
-      <span className="warning-icon" aria-hidden="true"><span /></span>
-      <div>
-        <strong>Live inference unavailable</strong>
-        <p>The dashboard results and methodology remain available, but live model predictions are temporarily offline.</p>
-        <small>Artifact service unavailable</small>
-      </div>
-    </section>
-  );
-}
+type View = "overview" | "live" | "compare" | "analysis";
 
 export function Dashboard() {
   const [view, setView] = useState<View>("overview");
@@ -70,9 +34,8 @@ export function Dashboard() {
   const [predicting, setPredicting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailsModelId, setDetailsModelId] = useState<string | null>(null);
-  const detailsDialogRef = useRef<HTMLElement>(null);
-  const detailsCloseRef = useRef<HTMLButtonElement>(null);
-  const detailsTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const detailsTriggerRef = useRef<HTMLElement | null>(null);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     void Promise.allSettled([api.health(), api.models(), api.schema(), api.examples()] as const)
@@ -102,53 +65,10 @@ export function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    if (!detailsModelId) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const focusFrame = window.requestAnimationFrame(() => detailsCloseRef.current?.focus());
-
-    function handleDialogKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setDetailsModelId(null);
-        return;
-      }
-
-      if (event.key !== "Tab" || !detailsDialogRef.current) return;
-      const focusableElements = Array.from(
-        detailsDialogRef.current.querySelectorAll<HTMLElement>(
-          "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
-        )
-      );
-      if (focusableElements.length === 0) return;
-
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
-      if (event.shiftKey && document.activeElement === firstElement) {
-        event.preventDefault();
-        lastElement.focus();
-      } else if (!event.shiftKey && document.activeElement === lastElement) {
-        event.preventDefault();
-        firstElement.focus();
-      }
-    }
-
-    document.addEventListener("keydown", handleDialogKeyDown);
-    return () => {
-      window.cancelAnimationFrame(focusFrame);
-      document.removeEventListener("keydown", handleDialogKeyDown);
-      document.body.style.overflow = previousOverflow;
-      detailsTriggerRef.current?.focus();
-    };
-  }, [detailsModelId]);
-
   const modified = useMemo(() => isModified(record, selectedExample), [record, selectedExample]);
   const serviceReady = Boolean(health?.ready);
   const workspaceReady = serviceReady && Boolean(schema);
-  const selectedModel = models.find((model) => model.id === modelId);
-  const detailsModel = offlineModels.find((model) => model.id === detailsModelId);
+  const detailsModel = MODEL_DISPLAY.find((model) => model.id === detailsModelId);
   const detailsMetadata = models.find((model) => model.id === detailsModelId);
   const detailsResult = compareResults.find((result) => result.model === detailsModelId);
 
@@ -200,279 +120,125 @@ export function Dashboard() {
     }
   }
 
-  function renderReadyWorkspace() {
-    if (!schema) return null;
-
-    return (
-      <section className="workspace">
-        <aside className="input-panel">
-          <div className="panel-heading">
-            <div><p className="eyebrow">Curated held-out examples</p><h2>Choose a record</h2></div>
-            {modified && <span className="modified-badge">Modified example</span>}
-          </div>
-          <div className="example-list">
-            {examples.map((example) => (
-              <button
-                key={example.sample_index}
-                className={selectedExample?.sample_index === example.sample_index && !modified ? "example-card selected" : "example-card"}
-                onClick={() => chooseExample(example)}
-              >
-                <b>{scenarioLabel[example.scenario] ?? example.scenario}</b>
-                <span>Known held-out label: {example.evaluation_metadata.known_held_out_label ? "Attack" : "Normal"}</span>
-              </button>
-            ))}
-          </div>
-          {selectedExample && !modified && <p className="metadata-note">Selected: {scenarioLabel[selectedExample.scenario] ?? selectedExample.scenario}. Known held-out label is evaluation metadata only; it is never sent to a model.</p>}
-          {selectedExample && modified && <p className="metadata-note warning-text">Ground-truth comparison disabled because this record has been edited.</p>}
-
-          <div className="quick-fields">
-            <p className="eyebrow">Primary visible fields</p>
-            {["proto", "service", "state"].map((name) => (
-              <label key={name}>{name}
-                <select value={formValue(record[name])} onChange={(event) => updateValue(name, event.target.value, "string")}>
-                  {schema.categorical_categories[name]?.map((option) => <option key={option} value={option}>{option}</option>)}
-                </select>
-              </label>
-            ))}
-          </div>
-
-          <details className="advanced-editor">
-            <summary>Advanced: View / edit all 39 features</summary>
-            <div className="field-grid">
-              {schema.fields.map((field) => (
-                <label key={field.name}>{field.name}
-                  {field.kind === "categorical" ? (
-                    <select value={formValue(record[field.name])} onChange={(event) => updateValue(field.name, event.target.value, field.type)}>
-                      {schema.categorical_categories[field.name]?.map((option) => <option key={option} value={option}>{option}</option>)}
-                    </select>
-                  ) : (
-                    <input aria-label={field.name} type="number" min={field.non_negative ? 0 : undefined} step={field.type === "integer" ? 1 : "any"} value={formValue(record[field.name])} onChange={(event) => updateValue(field.name, event.target.value, field.type)} />
-                  )}
-                </label>
-              ))}
-            </div>
-          </details>
-          <button className="reset-button" disabled={!selectedExample || !modified} onClick={() => selectedExample && chooseExample(selectedExample)}>Reset to selected example</button>
-        </aside>
-
-        <div className="result-panel">
-          {view === "live" ? (
-            <>
-              <div className="panel-heading"><div><p className="eyebrow">Single model mode</p><h2>Prediction result</h2></div></div>
-              <div className="action-row">
-                <label>Model
-                  <select value={modelId} onChange={(event) => { setModelId(event.target.value); setSingleResult(null); }}>
-                    {models.map((model) => <option key={model.id} value={model.id}>{model.display_name}</option>)}
-                  </select>
-                </label>
-                <button className="primary-button" disabled={!serviceReady || predicting || Object.keys(record).length === 0} onClick={runSingle}>{predicting ? "Running…" : "Run prediction"}</button>
-              </div>
-              {singleResult && <div className="single-result"><PredictionCard result={singleResult} model={selectedModel} example={selectedExample} modified={modified} /></div>}
-            </>
-          ) : (
-            <>
-              <div className="panel-heading">
-                <div><p className="eyebrow">Shared evaluation protocol</p><h2>Model comparison</h2></div>
-                <button className="primary-button" disabled={!serviceReady || predicting || Object.keys(record).length === 0} onClick={runCompare}>{predicting ? "Comparing…" : "Compare all"}</button>
-              </div>
-              {compareResults.length > 0 && (
-                <>
-                  {hasDisagreement(compareResults) && <p className="disagreement-note">Models disagree on this record because each learned a different decision boundary and uses its own validation-selected operating threshold.</p>}
-                  <div className="prediction-grid">{compareResults.map((result) => <PredictionCard key={result.model} result={result} model={models.find((model) => model.id === result.model)} example={selectedExample} modified={modified} />)}</div>
-                </>
-              )}
-            </>
-          )}
-          {!singleResult && compareResults.length === 0 && (
-            <div className="empty-state">
-              <span className="empty-state-mark" aria-hidden="true" />
-              <h3>Ready for finalized inference</h3>
-              <p>Select a curated record, inspect its active features if needed, then run {view === "compare" ? "all four models" : "the selected model"}.</p>
-              {selectedExample && <p>Selected scenario: <b>{scenarioLabel[selectedExample.scenario] ?? selectedExample.scenario}</b></p>}
-            </div>
-          )}
-          <p className="probability-caveat">P(attack) is the finalized model score for this dataset. It is not a calibrated real-world attack likelihood.</p>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <main className="shell">
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true">◈</span>
-          <div><p>EECS 3404</p><h1>Intrusion Detection Lab</h1></div>
-        </div>
+    <main className="app-shell">
+      <AppHeader view={view} onViewChange={setView} serviceReady={serviceReady} />
 
-        <nav className="nav-tabs" aria-label="Dashboard sections">
-          {navigation.map((item) => (
-            <button key={item.id} className={view === item.id ? "active" : ""} aria-pressed={view === item.id} onClick={() => setView(item.id)}>{item.label}</button>
-          ))}
-        </nav>
-
-        <div className={`service-status ${serviceReady ? "ready" : "offline"}`} role="status" aria-live="polite">
-          <span aria-hidden="true" />{serviceReady ? "Model service ready" : "Model service unavailable"}
-        </div>
-      </header>
-
-      {loading && <section className="loading-panel"><div className="spinner" />Loading finalized model metadata…</section>}
-
-      {!loading && view === "overview" && (
-        <section className="overview-page">
-          <div className="overview-hero">
-            <article className="hero-panel">
-              <p className="eyebrow">EECS 3404 <span>•</span> Network Security Analytics</p>
-              <span className="dataset-chip"><span aria-hidden="true" />UNSW-NB15 <b>•</b> Binary Classification</span>
-              <h2>Explainable and Drift-Aware <br />Machine Learning for <br />Network Intrusion Detection</h2>
-              <p className="hero-copy">Classify UNSW-NB15 network traffic as <b>Normal</b> or <b>Attack</b> with four finalized models.</p>
-              <div className="hero-actions">
-                <button className="primary-button" onClick={() => setView("compare")}>Compare Models</button>
-                <button className="secondary-button" onClick={() => setView("live")}>Live Detection</button>
-              </div>
-            </article>
-
-            <aside className="snapshot-panel">
-              <div className="section-heading">
-                <div><p className="eyebrow">At a glance</p><h2>Project Snapshot</h2></div>
-                <span className="snapshot-orbit" aria-hidden="true"><span /></span>
-              </div>
-              <div className="snapshot-grid">
-                {snapshotMetrics.map((metric) => <div className="snapshot-metric" key={metric.label}><strong>{metric.value}</strong><span>{metric.label}</span></div>)}
-              </div>
-              <div className="methodology-strip">
-                <p className="micro-label">Methodology safeguards</p>
-                <div>{methodology.map((item) => <span key={item}><i aria-hidden="true" />{item}</span>)}</div>
-              </div>
-              <p className="source-sha">Evaluation snapshot <span>{health?.frozen_source_sha.slice(0, 8) ?? "loading"}</span></p>
-            </aside>
-          </div>
-
-          <section className="pipeline-panel" aria-labelledby="pipeline-title">
-            <div className="pipeline-heading"><div><p className="eyebrow">Evaluation workflow</p><h2 id="pipeline-title">Project Pipeline</h2></div><span>Finalized evaluation workflow</span></div>
-            <div className="pipeline-steps">
-              {pipelineSteps.map((step, index) => (
-                <div className="pipeline-step" key={step}>
-                  <span>{String(index + 1).padStart(2, "0")}</span><b>{step}</b>{index < pipelineSteps.length - 1 && <i aria-hidden="true" />}
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {!serviceReady && <ServiceNotice />}
+      {loading && (
+        <section className="loading-panel" role="status">
+          <span className="spinner" aria-hidden="true" />
+          Loading finalized model metadata…
         </section>
       )}
 
-      {!loading && view === "live" && (
-        <section className="feature-page">
-          <header className="page-heading"><p className="eyebrow">Single-flow analysis</p><h2>Live Detection</h2><p>Evaluate a network flow against the finalized intrusion-detection models.</p></header>
-          {!serviceReady && <ServiceNotice />}
-          {serviceReady && error && <p className="inline-error" role="alert">{error}</p>}
-          {workspaceReady ? renderReadyWorkspace() : (
-            <section className="offline-detection-grid">
-              <article className="offline-input-card">
-                <div className="panel-heading"><div><p className="eyebrow">Input contract</p><h2>Network Flow Input</h2></div><span className="offline-chip">Offline preview</span></div>
-                <p className="panel-copy">Feature controls become available when the model artifact service is restored.</p>
-                <div className="offline-fields">
-                  {["Protocol", "Service", "Connection state"].map((field) => <label key={field}>{field}<select disabled><option>Model service unavailable</option></select></label>)}
-                </div>
-                <div className="offline-feature-row"><span>Advanced feature editor</span><b>39 fields</b></div>
-                <button className="primary-button" disabled>Run Prediction</button>
-              </article>
+      {!loading && (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={view}
+            initial={reduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12 }}
+          >
+            {view === "overview" && (
+              <section className="view-panel">
+                <OverviewPanel health={health} serviceReady={serviceReady} onNavigate={setView} />
+                {!serviceReady && <ServiceBanner />}
+              </section>
+            )}
 
-              <article className="offline-result-card">
-                <div className="result-visual" aria-hidden="true"><span><i /></span></div>
-                <p className="eyebrow">Prediction Result</p>
-                <h2>Live model service unavailable</h2>
-                <p>Predictions will appear here when the model service is restored.</p>
-                <div className="result-placeholder"><span /><span /><span /></div>
-              </article>
-            </section>
-          )}
-        </section>
-      )}
+            {view === "live" && (
+              <section className="view-panel">
+                <header className="view-heading">
+                  <p className="section-label">Single-flow analysis</p>
+                  <h2>Live Detection</h2>
+                  <p>
+                    Run one of the finalized classifiers on a real held-out UNSW-NB15 traffic record and inspect how its
+                    decision score compares with the validation-selected threshold.
+                  </p>
+                </header>
+                {!serviceReady && <ServiceBanner />}
+                {serviceReady && error && <p className="inline-error" role="alert">{error}</p>}
+                {workspaceReady && schema ? (
+                  <LiveDetectionWorkspace
+                    schema={schema}
+                    examples={examples}
+                    selectedExample={selectedExample}
+                    modified={modified}
+                    record={record}
+                    models={models}
+                    modelId={modelId}
+                    onModelIdChange={(id) => { setModelId(id); setSingleResult(null); }}
+                    onSelectExample={chooseExample}
+                    onChangeField={updateValue}
+                    onReset={() => selectedExample && chooseExample(selectedExample)}
+                    onRunSingle={runSingle}
+                    serviceReady={serviceReady}
+                    predicting={predicting}
+                    singleResult={singleResult}
+                  />
+                ) : (
+                  <OfflineWorkspaceNotice />
+                )}
+              </section>
+            )}
 
-      {!loading && view === "compare" && (
-        <section className="feature-page">
-          <header className="page-heading"><p className="eyebrow">Shared evaluation protocol</p><h2>Model Comparison</h2><p>Compare the four finalized classifiers under the shared evaluation protocol.</p></header>
-          {!serviceReady && <ServiceNotice />}
-          {serviceReady && error && <p className="inline-error" role="alert">{error}</p>}
-          <section className="model-grid" aria-label="Finalized project models">
-            {offlineModels.map((model, index) => (
-              <button
-                type="button"
-                className={`model-card ${model.tone}`}
-                key={model.id}
-                onClick={(event) => openModelDetails(model.id, event.currentTarget)}
-                aria-haspopup="dialog"
-              >
-                <span className="model-card-top"><span className="model-monogram" aria-hidden="true">{model.abbreviation}</span><span className="model-index">0{index + 1}</span></span>
-                <span className="micro-label">{model.category}</span>
-                <span className="model-card-name">{model.name}</span>
-                <span className="model-card-copy">{serviceReady ? "Inspect finalized model metadata and evaluation settings." : "Evaluation results are temporarily unavailable."}</span>
-                <span className="model-card-action">View model details <i aria-hidden="true" /></span>
-              </button>
-            ))}
-          </section>
-          {workspaceReady && renderReadyWorkspace()}
-        </section>
+            {view === "compare" && (
+              <section className="view-panel">
+                <header className="view-heading">
+                  <p className="section-label">Shared evaluation protocol</p>
+                  <h2>Model Comparison</h2>
+                  <p>
+                    Run all four finalized classifiers on the same held-out UNSW-NB15 traffic record and compare their
+                    decisions, scores, and validation-selected thresholds.
+                  </p>
+                </header>
+                {!serviceReady && <ServiceBanner />}
+                {serviceReady && error && <p className="inline-error" role="alert">{error}</p>}
+                {workspaceReady && schema && (
+                  <CompareWorkspace
+                    schema={schema}
+                    examples={examples}
+                    selectedExample={selectedExample}
+                    modified={modified}
+                    record={record}
+                    models={models}
+                    onSelectExample={chooseExample}
+                    onChangeField={updateValue}
+                    onReset={() => selectedExample && chooseExample(selectedExample)}
+                    onRunCompare={runCompare}
+                    serviceReady={serviceReady}
+                    predicting={predicting}
+                    compareResults={compareResults}
+                    onOpenModelDetails={openModelDetails}
+                  />
+                )}
+              </section>
+            )}
+
+            {view === "analysis" && (
+              <section className="view-panel">
+                <header className="view-heading">
+                  <p className="section-label">Diagnostics and robustness</p>
+                  <h2>Analysis</h2>
+                  <p>Charts and tables generated from the committed diagnostics outputs — nothing on this page is computed live.</p>
+                </header>
+                <AnalysisPanel />
+              </section>
+            )}
+          </motion.div>
+        </AnimatePresence>
       )}
 
       {detailsModel && (
-        <div
-          className="model-dialog-backdrop"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setDetailsModelId(null);
-          }}
-        >
-          <section
-            className={`model-dialog ${detailsModel.tone}`}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="model-dialog-title"
-            aria-describedby="model-dialog-description"
-            ref={detailsDialogRef}
-          >
-            <header className="model-dialog-header">
-              <div className="model-dialog-heading">
-                <span className="model-monogram" aria-hidden="true">{detailsModel.abbreviation}</span>
-                <div><p className="micro-label">{detailsModel.category}</p><h2 id="model-dialog-title">{detailsModel.name}</h2></div>
-              </div>
-              <button className="model-dialog-close" type="button" onClick={() => setDetailsModelId(null)} ref={detailsCloseRef} aria-label="Close model details"><span aria-hidden="true" /></button>
-            </header>
-
-            <div className={`model-service-summary ${serviceReady ? "ready" : "offline"}`}>
-              <span aria-hidden="true" />
-              <div><p>Current service status</p><strong>{serviceReady ? "Model service ready" : "Live inference unavailable"}</strong></div>
-            </div>
-
-            <div className="model-dialog-body" id="model-dialog-description">
-              <section>
-                <p className="eyebrow">Finalized project configuration</p>
-                <dl className="model-metadata-list">
-                  <div><dt>Model category</dt><dd>{detailsModel.category}</dd></div>
-                  <div><dt>Input contract</dt><dd>39 primary features</dd></div>
-                  <div><dt>Evaluation workflow</dt><dd>Validation-selected locked threshold; no retraining</dd></div>
-                  {detailsMetadata && <div><dt>Transformed features</dt><dd>{detailsMetadata.transformed_feature_count}</dd></div>}
-                  {detailsMetadata && <div><dt>Locked threshold</dt><dd>{percentage(detailsMetadata.threshold)}</dd></div>}
-                </dl>
-              </section>
-
-              <section className="model-evaluation-summary">
-                <p className="eyebrow">Evaluation information</p>
-                {detailsMetadata ? (
-                  <>
-                    <p>{detailsMetadata.caveat}</p>
-                    <p className="model-probability-semantics">{detailsMetadata.probability_semantics}</p>
-                    {detailsResult && <p className="model-result-note">Current comparison: <strong>{detailsResult.label === "attack" ? "Attack" : "Normal"}</strong> at {percentage(detailsResult.attack_probability)} P(attack).</p>}
-                  </>
-                ) : (
-                  <p>Evaluation results are temporarily unavailable while the model artifact service is offline.</p>
-                )}
-              </section>
-            </div>
-          </section>
-        </div>
+        <ModelDetailsDialog
+          model={detailsModel}
+          metadata={detailsMetadata}
+          comparisonResult={detailsResult}
+          serviceReady={serviceReady}
+          restoreFocusRef={detailsTriggerRef}
+          onClose={() => setDetailsModelId(null)}
+        />
       )}
     </main>
   );

@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Network Intrusion Detection | Four-Model Demo",
-  description: "Interactive dashboard for finalized EECS 3404 model artifacts."
+  description: "Inference console for four finalized EECS 3404 intrusion-detection models trained on UNSW-NB15."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

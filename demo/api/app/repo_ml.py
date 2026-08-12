@@ -9,6 +9,7 @@ from typing import Any
 
 import joblib
 import pandas as pd
+import xgboost as xgb
 
 from .settings import CANONICAL_FIELDS
 
@@ -21,11 +22,18 @@ THRESHOLDS_PATH = EXPERIMENTS_DIR / "standardized_evaluation" / "selected_thresh
 TEST_FEATURES_PATH = PROCESSED_DIR / "X_test.parquet"
 TEST_LABELS_PATH = PROCESSED_DIR / "y_test.parquet"
 
+# XGBoost is loaded from its own native JSON format (src/07_xgboost.py's
+# model.save_model() output) instead of the pickled artifacts.joblib copy.
+# Native JSON is XGBoost's cross-version/cross-platform serialization, so it
+# avoids joblib/pickle load failures seen on some Windows environments; both
+# forms reproduce identical predict_proba output (verified numerically).
+XGBOOST_NATIVE_MODEL_PATH = EXPERIMENTS_DIR / "xgboost" / "xgboost_model.json"
+
 MODEL_PATHS = {
     "logistic_regression": ARTIFACTS_DIR / "logistic_regression.joblib",
     "neural_network": ARTIFACTS_DIR / "neural_network.joblib",
     "random_forest": ARTIFACTS_DIR / "random_forest.joblib",
-    "xgboost": ARTIFACTS_DIR / "xgboost.joblib",
+    "xgboost": XGBOOST_NATIVE_MODEL_PATH,
 }
 PREPROCESSOR_PATHS = {
     "linear": ARTIFACTS_DIR / "preprocess_linear.joblib",
@@ -54,7 +62,12 @@ def load_thresholds() -> dict[str, float]:
 
 
 def load_model(name: str) -> Any:
-    return joblib.load(require_frozen_path(MODEL_PATHS[name]))
+    path = require_frozen_path(MODEL_PATHS[name])
+    if name == "xgboost":
+        model = xgb.XGBClassifier()
+        model.load_model(path)
+        return model
+    return joblib.load(path)
 
 
 def load_preprocessor(family: str) -> Any:
