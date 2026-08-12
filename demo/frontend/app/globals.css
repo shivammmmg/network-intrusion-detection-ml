@@ -1009,11 +1009,14 @@ fieldset.quick-fields {
 .example-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-auto-rows: 1fr;
   gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
+
+.example-gallery > li { display: flex; min-width: 0; }
 
 .example-card {
   display: flex;
@@ -1021,6 +1024,7 @@ fieldset.quick-fields {
   align-items: flex-start;
   gap: 6px;
   width: 100%;
+  height: 100%;
   text-align: left;
   padding: var(--space-3);
   border: 1px solid var(--border);
@@ -1179,8 +1183,8 @@ fieldset.quick-fields {
 }
 
 .score-scale-fill { position: absolute; top: 0; left: 0; height: 100%; transition: width 500ms ease; }
-.score-scale-fill.is-attack { background: var(--attack-soft); }
-.score-scale-fill.is-normal { background: var(--normal-soft); }
+.score-scale-fill.is-attack { background: linear-gradient(90deg, #ef4444, var(--attack)); }
+.score-scale-fill.is-normal { background: linear-gradient(90deg, #22c55e, var(--normal)); }
 
 .score-scale-marker {
   position: absolute;

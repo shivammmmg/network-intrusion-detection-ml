@@ -7,6 +7,7 @@ import { correctness, hasDisagreement, isModified, percentage, scenarioLabel } f
 import { recordValidationError } from "../lib/recordValidation";
 import type { DemoExample, ModelMetadata, PredictionResult, SchemaResponse } from "../lib/types";
 import { PredictionCard } from "../components/PredictionCard";
+import { ScoreScale } from "../components/live/ScoreScale";
 
 const example: DemoExample = {
   sample_index: 12,
@@ -113,6 +114,13 @@ describe("frontend response and example presentation", () => {
     const markup = renderToStaticMarkup(createElement(PredictionCard, { result: { ...attack, attack_probability: 0, prediction: 0, label: "normal" }, model, modified: true }));
     expect(markup).toContain("width:0%");
     expect(markup).toContain(">Normal<");
+  });
+
+  it("fills the live score pill to the exact returned attack score while retaining its threshold marker", () => {
+    const markup = renderToStaticMarkup(createElement(ScoreScale, { probability: 0.7, threshold: 0.49, attack: true }));
+    expect(markup).toContain("score-scale-fill is-attack");
+    expect(markup).toContain("width:70%");
+    expect(markup).toContain("left:49%");
   });
 
   it("renders all four comparison cards while suppressing stale ground-truth metadata after an edit", () => {
