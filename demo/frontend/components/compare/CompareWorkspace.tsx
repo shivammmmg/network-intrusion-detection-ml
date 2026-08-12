@@ -19,6 +19,7 @@ interface CompareWorkspaceProps {
   record: FeatureRecord;
   models: ModelMetadata[];
   onSelectExample: (example: DemoExample) => void;
+  onSelectCustom: () => void;
   onChangeField: (name: string, value: string, type: string) => void;
   onReset: () => void;
   onRunCompare: () => void;
@@ -38,6 +39,7 @@ export function CompareWorkspace(props: CompareWorkspaceProps) {
     record,
     models,
     onSelectExample,
+    onSelectCustom,
     onChangeField,
     onReset,
     onRunCompare,
@@ -56,7 +58,7 @@ export function CompareWorkspace(props: CompareWorkspaceProps) {
   return (
     <div className="compare-flow">
       <section className="compare-block">
-        <ExampleGallery examples={examples} selectedExample={selectedExample} modified={modified} onSelect={onSelectExample} />
+        <ExampleGallery examples={examples} selectedExample={selectedExample} modified={modified} onSelect={onSelectExample} onSelectCustom={onSelectCustom} />
       </section>
 
       <section className="compare-block">
@@ -67,9 +69,11 @@ export function CompareWorkspace(props: CompareWorkspaceProps) {
         {inputError && <p className="inline-error" role="alert">{inputError}</p>}
         {modified && (
           <div className="compare-modified-note">
-            <span className="status-tag is-warning">Modified input</span>
+            <span className="status-tag is-warning">{selectedExample ? "Modified input" : "Custom input"}</span>
             <p className="hint-text is-warning">
-              Ground-truth comparison is disabled because this record no longer matches the original held-out example.
+              {selectedExample
+                ? "Ground-truth comparison is disabled because this record no longer matches the original held-out example."
+                : "Ground-truth comparison is unavailable for a custom traffic record."}
             </p>
           </div>
         )}
@@ -113,9 +117,6 @@ export function CompareWorkspace(props: CompareWorkspaceProps) {
                   />
                 ))}
               </div>
-              <p className="footnote">
-                This is each model&apos;s finalized decision score for this dataset, not a calibrated real-world attack probability.
-              </p>
             </motion.div>
           ) : (
             <div className="compare-empty-state">

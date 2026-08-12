@@ -4,11 +4,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { api, isPredictionResult } from "../lib/api";
 import { correctness, hasDisagreement, isModified, percentage, scenarioLabel } from "../lib/presentation";
-import { recordValidationError } from "../lib/recordValidation";
+import { createManualRecord, recordValidationError } from "../lib/recordValidation";
 import type { DemoExample, ModelMetadata, PredictionResult, SchemaResponse } from "../lib/types";
 import { PredictionCard } from "../components/PredictionCard";
 import { ScoreScale } from "../components/live/ScoreScale";
 import { ModelSegmentedControl } from "../components/live/ModelSegmentedControl";
+import { ExampleGallery } from "../components/live/ExampleGallery";
 
 const example: DemoExample = {
   sample_index: 12,
@@ -68,6 +69,15 @@ describe("frontend response and example presentation", () => {
     expect(recordValidationError({ dur: -1, spkts: 1, proto: "tcp" }, schema)).toBe("dur must be zero or greater.");
     expect(recordValidationError({ dur: 0, spkts: 1, proto: "" }, schema)).toBe("proto is required.");
     expect(recordValidationError({ dur: 0, spkts: 1, proto: "tcp" }, schema)).toBeNull();
+  });
+
+  it("creates a fully blank, schema-shaped record for manual entry", () => {
+    const manualRecord = createManualRecord(schema);
+    expect(Object.keys(manualRecord)).toEqual(["dur", "spkts", "proto"]);
+    expect(manualRecord.dur).toBeNaN();
+    expect(manualRecord.spkts).toBeNaN();
+    expect(manualRecord.proto).toBe("");
+    expect(recordValidationError(manualRecord, schema)).toBe("dur must be a finite number.");
   });
 
   it("labels curated examples and detects modified input", () => {
@@ -134,6 +144,26 @@ describe("frontend response and example presentation", () => {
     const markup = renderToStaticMarkup(createElement(ModelSegmentedControl, { models, modelId: "neural_network", onChange: () => undefined }));
     expect((markup.match(/aria-pressed=/g) ?? []).length).toBe(4);
     expect(markup).toContain(">Logistic Regression</button>");
+  });
+
+  it("inserts the custom traffic option after the high-confidence attack example", () => {
+    const galleryExamples = [
+      { ...example, sample_index: 1, scenario: "high_confidence_normal" },
+      { ...example, sample_index: 2, scenario: "high_confidence_attack" },
+      { ...example, sample_index: 3, scenario: "model_disagreement" }
+    ];
+    const markup = renderToStaticMarkup(
+      createElement(ExampleGallery, {
+        examples: galleryExamples,
+        selectedExample: galleryExamples[0],
+        modified: false,
+        onSelect: () => undefined,
+        onSelectCustom: () => undefined
+      })
+    );
+    expect(markup.indexOf("High-confidence attack")).toBeLessThan(markup.indexOf("Custom traffic record"));
+    expect(markup.indexOf("Custom traffic record")).toBeLessThan(markup.indexOf("Model disagreement"));
+    expect(markup).toContain("Manual input · no held-out label");
   });
 
   it("renders all four comparison cards while suppressing stale ground-truth metadata after an edit", () => {

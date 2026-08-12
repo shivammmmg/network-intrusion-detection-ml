@@ -20,6 +20,7 @@ interface LiveDetectionWorkspaceProps {
   modelId: string;
   onModelIdChange: (id: string) => void;
   onSelectExample: (example: DemoExample) => void;
+  onSelectCustom: () => void;
   onChangeField: (name: string, value: string, type: string) => void;
   onReset: () => void;
   onRunSingle: () => void;
@@ -40,6 +41,7 @@ export function LiveDetectionWorkspace(props: LiveDetectionWorkspaceProps) {
     modelId,
     onModelIdChange,
     onSelectExample,
+    onSelectCustom,
     onChangeField,
     onReset,
     onRunSingle,
@@ -56,7 +58,7 @@ export function LiveDetectionWorkspace(props: LiveDetectionWorkspaceProps) {
   return (
     <div className="live-flow">
       <section className="live-block">
-        <ExampleGallery examples={examples} selectedExample={selectedExample} modified={modified} onSelect={onSelectExample} />
+        <ExampleGallery examples={examples} selectedExample={selectedExample} modified={modified} onSelect={onSelectExample} onSelectCustom={onSelectCustom} />
       </section>
 
       <section className="live-block">

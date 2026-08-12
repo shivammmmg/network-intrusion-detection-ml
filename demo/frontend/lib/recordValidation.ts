@@ -1,5 +1,12 @@
 import type { FeatureRecord, SchemaResponse } from "./types";
 
+/** Create a deliberately blank record for full manual entry. */
+export function createManualRecord(schema: SchemaResponse): FeatureRecord {
+  return Object.fromEntries(
+    schema.fields.map((field) => [field.name, field.kind === "categorical" ? "" : Number.NaN])
+  ) as FeatureRecord;
+}
+
 /**
  * Validate the browser-side record before it is JSON-serialized. The API repeats
  * these checks authoritatively, but keeping invalid browser state out of a

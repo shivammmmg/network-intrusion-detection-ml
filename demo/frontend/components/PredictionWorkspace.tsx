@@ -138,7 +138,6 @@ export function PredictionWorkspace(props: PredictionWorkspaceProps) {
           )}
         </AnimatePresence>
 
-        <p className="footnote">P(attack) is the model&apos;s finalized decision score for this dataset — not a calibrated real-world attack probability.</p>
       </div>
     </section>
   );

@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { api, ApiError } from "../lib/api";
 import { cloneRecord, isModified } from "../lib/presentation";
-import { recordValidationError } from "../lib/recordValidation";
+import { createManualRecord, recordValidationError } from "../lib/recordValidation";
 import { MODEL_DISPLAY } from "../lib/modelDisplay";
 import type { DemoExample, FeatureRecord, HealthResponse, ModelMetadata, PredictionResult, SchemaResponse } from "../lib/types";
 
@@ -70,6 +70,9 @@ export function Dashboard() {
   const serviceReady = Boolean(health?.ready);
   const workspaceReady = serviceReady && Boolean(schema);
   const inputError = recordValidationError(record, schema);
+  const displayedInputError = !selectedExample && inputError && schema
+    ? `Complete all ${schema.fields.length} fields to enable prediction.`
+    : inputError;
   const detailsModel = MODEL_DISPLAY.find((model) => model.id === detailsModelId);
   const detailsMetadata = models.find((model) => model.id === detailsModelId);
   const detailsResult = compareResults.find((result) => result.model === detailsModelId);
@@ -82,6 +85,15 @@ export function Dashboard() {
   function chooseExample(example: DemoExample) {
     setSelectedExample(example);
     setRecord(cloneRecord(example.record));
+    setSingleResult(null);
+    setCompareResults([]);
+    setError(null);
+  }
+
+  function chooseCustomRecord() {
+    if (!schema) return;
+    setSelectedExample(undefined);
+    setRecord(createManualRecord(schema));
     setSingleResult(null);
     setCompareResults([]);
     setError(null);
@@ -157,7 +169,7 @@ export function Dashboard() {
                   <p className="section-label">Single-flow analysis</p>
                   <h2>Live Detection</h2>
                   <p>
-                    Run one of the finalized classifiers on a real held-out UNSW-NB15 traffic record and inspect how its
+                    Run one finalized classifier on a curated held-out or manually entered traffic record and inspect how its
                     decision score compares with the validation-selected threshold.
                   </p>
                 </header>
@@ -174,10 +186,11 @@ export function Dashboard() {
                     modelId={modelId}
                     onModelIdChange={(id) => { setModelId(id); setSingleResult(null); }}
                     onSelectExample={chooseExample}
+                    onSelectCustom={chooseCustomRecord}
                     onChangeField={updateValue}
                     onReset={() => selectedExample && chooseExample(selectedExample)}
                     onRunSingle={runSingle}
-                    inputError={inputError}
+                    inputError={displayedInputError}
                     serviceReady={serviceReady}
                     predicting={predicting}
                     singleResult={singleResult}
@@ -194,7 +207,7 @@ export function Dashboard() {
                   <p className="section-label">Shared evaluation protocol</p>
                   <h2>Model Comparison</h2>
                   <p>
-                    Run all four finalized classifiers on the same held-out UNSW-NB15 traffic record and compare their
+                    Run all four finalized classifiers on the same curated or manually entered traffic record and compare their
                     decisions, scores, and validation-selected thresholds.
                   </p>
                 </header>
@@ -209,10 +222,11 @@ export function Dashboard() {
                     record={record}
                     models={models}
                     onSelectExample={chooseExample}
+                    onSelectCustom={chooseCustomRecord}
                     onChangeField={updateValue}
                     onReset={() => selectedExample && chooseExample(selectedExample)}
                     onRunCompare={runCompare}
-                    inputError={inputError}
+                    inputError={displayedInputError}
                     serviceReady={serviceReady}
                     predicting={predicting}
                     compareResults={compareResults}

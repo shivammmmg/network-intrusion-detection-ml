@@ -51,10 +51,6 @@ export function ResultHero({ result, model, example, modified }: ResultHeroProps
           ? `The attack score exceeds ${modelName}'s validation-selected decision threshold, so this flow is classified as an attack.`
           : `The attack score remains below ${modelName}'s validation-selected decision threshold, so this flow is classified as normal.`}
       </p>
-
-      <p className="footnote">
-        This is the model&apos;s finalized decision score for this dataset, not a calibrated real-world attack probability.
-      </p>
     </article>
   );
 }

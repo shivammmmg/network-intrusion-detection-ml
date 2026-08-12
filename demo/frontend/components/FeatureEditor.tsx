@@ -23,6 +23,7 @@ export function FeatureEditor({ schema, record, onChange }: FeatureEditorProps) 
             <label key={name} className="field">
               <span className="field-label">{name}</span>
               <select value={formValue(record[name])} onChange={(event) => onChange(name, event.target.value, "string")}>
+                <option value="" disabled>Select a category</option>
                 {schema.categorical_categories[name]?.map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
@@ -39,6 +40,7 @@ export function FeatureEditor({ schema, record, onChange }: FeatureEditorProps) 
               <span className="field-label">{field.name}</span>
               {field.kind === "categorical" ? (
                 <select value={formValue(record[field.name])} onChange={(event) => onChange(field.name, event.target.value, field.type)}>
+                  <option value="" disabled>Select a category</option>
                   {schema.categorical_categories[field.name]?.map((option) => (
                     <option key={option} value={option}>{option}</option>
                   ))}
