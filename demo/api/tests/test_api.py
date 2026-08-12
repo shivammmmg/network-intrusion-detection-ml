@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from starlette.testclient import TestClient
 
-from demo.api.app.main import app
+from demo.api.app.main import LOCAL_FRONTEND_ORIGINS, allowed_cors_origins, app
 from demo.api.app.settings import EXPECTED_THRESHOLDS, FROZEN_SOURCE_SHA, INPUT_CONTRACT
 
 
@@ -62,6 +62,14 @@ def test_local_frontend_origin_is_permitted(client: TestClient) -> None:
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:3000"
     assert "POST" in response.headers["access-control-allow-methods"]
+
+
+def test_deployment_cors_origins_are_explicit_and_normalized() -> None:
+    assert allowed_cors_origins(" https://dashboard.example.com/ , https://preview.example.com ") == [
+        *LOCAL_FRONTEND_ORIGINS,
+        "https://dashboard.example.com",
+        "https://preview.example.com",
+    ]
 
 
 @pytest.mark.parametrize("model_id", list(EXPECTED_THRESHOLDS))

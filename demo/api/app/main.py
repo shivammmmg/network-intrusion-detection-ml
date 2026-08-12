@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 import math
+import os
 from typing import AsyncIterator
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -45,9 +46,19 @@ app = FastAPI(
 
 # The Phase 2 UI is a separate local development server. Keep the scope narrow:
 # this demo has no deployment configuration and only accepts the two local origins.
+LOCAL_FRONTEND_ORIGINS = ("http://localhost:3000", "http://127.0.0.1:3000")
+
+
+def allowed_cors_origins(configured_origins: str | None = None) -> list[str]:
+    """Return local development origins plus explicitly configured deployment URLs."""
+    raw_origins = os.getenv("CORS_ALLOWED_ORIGINS", "") if configured_origins is None else configured_origins
+    deployed_origins = [origin.strip().rstrip("/") for origin in raw_origins.split(",") if origin.strip()]
+    return [*LOCAL_FRONTEND_ORIGINS, *deployed_origins]
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=allowed_cors_origins(),
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
