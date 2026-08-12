@@ -8,6 +8,7 @@ import { recordValidationError } from "../lib/recordValidation";
 import type { DemoExample, ModelMetadata, PredictionResult, SchemaResponse } from "../lib/types";
 import { PredictionCard } from "../components/PredictionCard";
 import { ScoreScale } from "../components/live/ScoreScale";
+import { ModelSegmentedControl } from "../components/live/ModelSegmentedControl";
 
 const example: DemoExample = {
   sample_index: 12,
@@ -121,6 +122,18 @@ describe("frontend response and example presentation", () => {
     expect(markup).toContain("score-scale-fill is-attack");
     expect(markup).toContain("width:70%");
     expect(markup).toContain("left:49%");
+  });
+
+  it("renders every model as a separately selectable option", () => {
+    const models = [
+      model,
+      { ...model, id: "xgboost", display_name: "XGBoost" },
+      { ...model, id: "neural_network", display_name: "Neural Network" },
+      { ...model, id: "logistic_regression", display_name: "Logistic Regression" }
+    ];
+    const markup = renderToStaticMarkup(createElement(ModelSegmentedControl, { models, modelId: "neural_network", onChange: () => undefined }));
+    expect((markup.match(/aria-pressed=/g) ?? []).length).toBe(4);
+    expect(markup).toContain(">Logistic Regression</button>");
   });
 
   it("renders all four comparison cards while suppressing stale ground-truth metadata after an edit", () => {
