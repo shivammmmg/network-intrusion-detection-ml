@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { api, ApiError } from "../lib/api";
 import { cloneRecord, isModified } from "../lib/presentation";
+import { recordValidationError } from "../lib/recordValidation";
 import { MODEL_DISPLAY } from "../lib/modelDisplay";
 import type { DemoExample, FeatureRecord, HealthResponse, ModelMetadata, PredictionResult, SchemaResponse } from "../lib/types";
 
@@ -68,6 +69,7 @@ export function Dashboard() {
   const modified = useMemo(() => isModified(record, selectedExample), [record, selectedExample]);
   const serviceReady = Boolean(health?.ready);
   const workspaceReady = serviceReady && Boolean(schema);
+  const inputError = recordValidationError(record, schema);
   const detailsModel = MODEL_DISPLAY.find((model) => model.id === detailsModelId);
   const detailsMetadata = models.find((model) => model.id === detailsModelId);
   const detailsResult = compareResults.find((result) => result.model === detailsModelId);
@@ -93,9 +95,10 @@ export function Dashboard() {
   }
 
   async function runSingle() {
-    if (!serviceReady) return;
+    if (!serviceReady || inputError) return;
     setPredicting(true);
     setError(null);
+    setSingleResult(null);
     try {
       setSingleResult(await api.predict(modelId, record));
       setCompareResults([]);
@@ -107,9 +110,10 @@ export function Dashboard() {
   }
 
   async function runCompare() {
-    if (!serviceReady) return;
+    if (!serviceReady || inputError) return;
     setPredicting(true);
     setError(null);
+    setCompareResults([]);
     try {
       setCompareResults((await api.predictAll(record)).results);
       setSingleResult(null);
@@ -173,6 +177,7 @@ export function Dashboard() {
                     onChangeField={updateValue}
                     onReset={() => selectedExample && chooseExample(selectedExample)}
                     onRunSingle={runSingle}
+                    inputError={inputError}
                     serviceReady={serviceReady}
                     predicting={predicting}
                     singleResult={singleResult}
@@ -207,6 +212,7 @@ export function Dashboard() {
                     onChangeField={updateValue}
                     onReset={() => selectedExample && chooseExample(selectedExample)}
                     onRunCompare={runCompare}
+                    inputError={inputError}
                     serviceReady={serviceReady}
                     predicting={predicting}
                     compareResults={compareResults}

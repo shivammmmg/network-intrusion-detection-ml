@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import math
 from typing import AsyncIterator
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .examples import load_examples
 from .inference import predict_all, predict_one
@@ -49,6 +52,28 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+
+
+def json_safe_validation_detail(value: object) -> object:
+    """Keep malformed JSON values from breaking FastAPI's validation response."""
+    if isinstance(value, float) and not math.isfinite(value):
+        return "non-finite number"
+    if isinstance(value, dict):
+        return {str(key): json_safe_validation_detail(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [json_safe_validation_detail(item) for item in value]
+    if isinstance(value, tuple):
+        return [json_safe_validation_detail(item) for item in value]
+    return value
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_error_handler(_: Request, error: RequestValidationError) -> JSONResponse:
+    """Return controlled JSON for all invalid inputs, including NaN/Infinity."""
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        content={"detail": json_safe_validation_detail(error.errors())},
+    )
 
 
 def require_registry(request: Request) -> FrozenModelRegistry:

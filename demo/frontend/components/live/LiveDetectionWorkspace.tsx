@@ -7,7 +7,6 @@ import { ExampleGallery } from "./ExampleGallery";
 import { TrafficSummary } from "./TrafficSummary";
 import { ModelSegmentedControl } from "./ModelSegmentedControl";
 import { ResultHero } from "./ResultHero";
-import { AgreementPreview } from "./AgreementPreview";
 import { FeatureEditor } from "../FeatureEditor";
 import { Disclosure } from "../Disclosure";
 
@@ -24,6 +23,7 @@ interface LiveDetectionWorkspaceProps {
   onChangeField: (name: string, value: string, type: string) => void;
   onReset: () => void;
   onRunSingle: () => void;
+  inputError: string | null;
   serviceReady: boolean;
   predicting: boolean;
   singleResult: PredictionResult | null;
@@ -43,6 +43,7 @@ export function LiveDetectionWorkspace(props: LiveDetectionWorkspaceProps) {
     onChangeField,
     onReset,
     onRunSingle,
+    inputError,
     serviceReady,
     predicting,
     singleResult
@@ -63,6 +64,7 @@ export function LiveDetectionWorkspace(props: LiveDetectionWorkspaceProps) {
         <Disclosure summary="Advanced feature editor">
           <FeatureEditor schema={schema} record={record} onChange={onChangeField} />
         </Disclosure>
+        {inputError && <p className="inline-error" role="alert">{inputError}</p>}
         <button type="button" className="button button-ghost" disabled={!selectedExample || !modified} onClick={onReset}>
           Reset to selected example
         </button>
@@ -74,7 +76,7 @@ export function LiveDetectionWorkspace(props: LiveDetectionWorkspaceProps) {
         </div>
         <div className="live-run-row">
           <ModelSegmentedControl models={models} modelId={modelId} onChange={onModelIdChange} />
-          <button type="button" className="button button-primary" disabled={!canRun} onClick={onRunSingle}>
+          <button type="button" className="button button-primary" disabled={!canRun || Boolean(inputError)} onClick={onRunSingle}>
             {predicting ? "Running…" : "Run prediction"}
           </button>
         </div>
@@ -94,9 +96,6 @@ export function LiveDetectionWorkspace(props: LiveDetectionWorkspaceProps) {
               transition={{ duration: 0.15 }}
             >
               <ResultHero result={singleResult} model={selectedModel} example={selectedExample} modified={modified} />
-              {!modified && selectedExample && (
-                <AgreementPreview example={selectedExample} models={models} selectedModelId={modelId} />
-              )}
             </motion.div>
           ) : (
             <div className="live-empty-state">

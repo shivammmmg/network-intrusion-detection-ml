@@ -181,8 +181,8 @@ export interface VerificationCheck {
 // change size; do not adjust counts without re-running the commands.
 export const VERIFICATION_CHECKS: VerificationCheck[] = [
   { label: "Root pytest suite", detail: "15 tests — PASS" },
-  { label: "Backend API test suite", detail: "34 tests — PASS" },
-  { label: "Frontend test suite", detail: "7 tests — PASS" },
+  { label: "Backend API test suite", detail: "47 tests — PASS" },
+  { label: "Frontend test suite", detail: "9 tests — PASS" },
   { label: "Artifact → prediction reproducibility gate", detail: "4 / 4 models — PASS" },
   { label: "Leakage / integrity assertions", detail: "PASS" }
 ];
@@ -250,7 +250,7 @@ export const EVIDENCE_HIGHLIGHTS: EvidenceHighlight[] = [
   },
   {
     category: "Verification",
-    headline: "56 tests passing",
+    headline: "71 tests passing",
     lines: ["4 / 4 artifact reproduction gate", "0 cross-split overlap"]
   }
 ];

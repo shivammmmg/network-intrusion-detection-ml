@@ -4,7 +4,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { api, isPredictionResult } from "../lib/api";
 import { correctness, hasDisagreement, isModified, percentage, scenarioLabel } from "../lib/presentation";
-import type { DemoExample, ModelMetadata, PredictionResult } from "../lib/types";
+import { recordValidationError } from "../lib/recordValidation";
+import type { DemoExample, ModelMetadata, PredictionResult, SchemaResponse } from "../lib/types";
 import { PredictionCard } from "../components/PredictionCard";
 
 const example: DemoExample = {
@@ -38,12 +39,33 @@ const model: ModelMetadata = {
   caveat: "demo"
 };
 
+const schema: SchemaResponse = {
+  input_contract: "unsw_nb15_primary_v1",
+  fields: [
+    { name: "dur", type: "number", kind: "numeric", required: true, binary: false, non_negative: true },
+    { name: "spkts", type: "integer", kind: "numeric", required: true, binary: false, non_negative: true },
+    { name: "proto", type: "string", kind: "categorical", required: true, binary: false, non_negative: false }
+  ],
+  categorical_categories: { proto: ["tcp"] },
+  excluded_fields: []
+};
+
 afterEach(() => vi.unstubAllGlobals());
 
 describe("frontend response and example presentation", () => {
   it("accepts a complete backend prediction response and rejects malformed payloads", () => {
     expect(isPredictionResult(attack)).toBe(true);
     expect(isPredictionResult({ model: "random_forest", attack_probability: 0.7 })).toBe(false);
+    expect(isPredictionResult({ ...attack, attack_probability: Number.NaN })).toBe(false);
+    expect(isPredictionResult({ ...attack, prediction: 0 })).toBe(false);
+  });
+
+  it("blocks cleared, non-finite, negative, and fractional-integer values before JSON serialization", () => {
+    expect(recordValidationError({ dur: Number.NaN, spkts: 1, proto: "tcp" }, schema)).toBe("dur must be a finite number.");
+    expect(recordValidationError({ dur: 0, spkts: 1.5, proto: "tcp" }, schema)).toBe("spkts must be an integer.");
+    expect(recordValidationError({ dur: -1, spkts: 1, proto: "tcp" }, schema)).toBe("dur must be zero or greater.");
+    expect(recordValidationError({ dur: 0, spkts: 1, proto: "" }, schema)).toBe("proto is required.");
+    expect(recordValidationError({ dur: 0, spkts: 1, proto: "tcp" }, schema)).toBeNull();
   });
 
   it("labels curated examples and detects modified input", () => {
@@ -66,6 +88,16 @@ describe("frontend response and example presentation", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:8000/predict/xgboost",
       expect.objectContaining({ method: "POST", body: JSON.stringify(example.record) })
+    );
+  });
+
+  it("turns a timed-out inference request into a recoverable user-facing error", async () => {
+    const timeout = new Error("aborted");
+    timeout.name = "AbortError";
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(timeout));
+
+    await expect(api.predict("xgboost", example.record)).rejects.toEqual(
+      expect.objectContaining({ name: "ApiError", message: "Model service timed out. Please try again." })
     );
   });
 

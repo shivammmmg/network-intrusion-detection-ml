@@ -9,6 +9,7 @@ import type {
 } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const REQUEST_TIMEOUT_MS = 30_000;
 
 export class ApiError extends Error {
   constructor(message: string, public readonly status?: number) {
@@ -36,22 +37,31 @@ export function isPredictionResult(value: unknown): value is PredictionResult {
   return (
     isObject(value) &&
     typeof value.model === "string" &&
-    typeof value.attack_probability === "number" &&
-    typeof value.threshold === "number" &&
+    typeof value.attack_probability === "number" && Number.isFinite(value.attack_probability) && value.attack_probability >= 0 && value.attack_probability <= 1 &&
+    typeof value.threshold === "number" && Number.isFinite(value.threshold) && value.threshold >= 0 && value.threshold <= 1 &&
     (value.prediction === 0 || value.prediction === 1) &&
-    (value.label === "normal" || value.label === "attack")
+    (value.label === "normal" || value.label === "attack") &&
+    value.label === (value.prediction === 1 ? "attack" : "normal")
   );
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...init,
-      headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) }
+      headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+      signal: controller.signal
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new ApiError("Model service timed out. Please try again.");
+    }
     throw new ApiError("Model service is unavailable. Live inference cannot be reached right now.");
+  } finally {
+    clearTimeout(timeout);
   }
 
   const body: unknown = await response.json().catch(() => ({}));

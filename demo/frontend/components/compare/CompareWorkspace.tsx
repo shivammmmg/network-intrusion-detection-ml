@@ -22,6 +22,7 @@ interface CompareWorkspaceProps {
   onChangeField: (name: string, value: string, type: string) => void;
   onReset: () => void;
   onRunCompare: () => void;
+  inputError: string | null;
   serviceReady: boolean;
   predicting: boolean;
   compareResults: PredictionResult[];
@@ -40,6 +41,7 @@ export function CompareWorkspace(props: CompareWorkspaceProps) {
     onChangeField,
     onReset,
     onRunCompare,
+    inputError,
     serviceReady,
     predicting,
     compareResults,
@@ -62,6 +64,7 @@ export function CompareWorkspace(props: CompareWorkspaceProps) {
         <Disclosure summary="Advanced feature editor">
           <FeatureEditor schema={schema} record={record} onChange={onChangeField} />
         </Disclosure>
+        {inputError && <p className="inline-error" role="alert">{inputError}</p>}
         {modified && (
           <div className="compare-modified-note">
             <span className="status-tag is-warning">Modified input</span>
@@ -80,7 +83,7 @@ export function CompareWorkspace(props: CompareWorkspaceProps) {
           <span className="section-label">3 · Compare</span>
           <p>Run the same record through Logistic Regression, Neural Network, Random Forest, and XGBoost.</p>
         </div>
-        <button type="button" className="button button-primary" disabled={!canRun} onClick={onRunCompare}>
+        <button type="button" className="button button-primary" disabled={!canRun || Boolean(inputError)} onClick={onRunCompare}>
           {predicting ? "Comparing…" : "Compare all models"}
         </button>
       </section>
