@@ -91,14 +91,9 @@ by the team was developed and verified by Shivam and is the version merged into
 
 ## Shared team work
 
-The following are shared across the team. Items marked *not started* are not
-yet complete at the time of writing.
+The following work was completed collaboratively across the team:
 
-- Final written report — *not started*.
-- Presentation and video walkthrough — *not started*.
-- Cross-review of one another's outputs, and integration of the model,
-  evaluation and diagnostics stages into a single consistent pipeline —
-  ongoing throughout the project.
-- Agreement on shared conventions: the fixed split, the transform-only
-  preprocessing rule, `1 = attack`, `attack_probability = P(y = 1)`, the common
-  prediction-file schema, and `RANDOM_STATE = 42`.
+- Final written report — completed.
+- Presentation and video walkthrough — completed.
+- Cross-review of one another's outputs, and integration of the model, evaluation, and diagnostics stages into a single consistent pipeline — completed.
+- Agreement on shared conventions: the fixed split, the transform-only preprocessing rule, `1 = attack`, `attack_probability = P(y = 1)`, the common prediction-file schema, and `RANDOM_STATE = 42` — completed.

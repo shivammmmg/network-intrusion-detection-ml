@@ -13,6 +13,8 @@ distribution drift.
 > evaluation are done; and the explainability and advanced diagnostics pipeline
 > is complete and independently verifiable.
 
+**Live dashboard:** https://intrusionml.vercel.app/
+
 The original proposal is available in
 [`EECS 3404 Major Project Idea.pdf`](./EECS%203404%20Major%20Project%20Idea.pdf).
 
@@ -287,8 +289,6 @@ Each `experiments/<model>/test_predictions.csv` contains `sample_index`,
 > operating-point results out of `predicted_label`.
 
 ## Interactive demo (supplemental)
-
-**Live dashboard:** https://intrusionml.vercel.app/
 
 `demo/` contains an optional interactive interface over the finalized models: a
 read-only FastAPI backend that loads all four frozen models and their fitted
