@@ -46,8 +46,9 @@ alone, because it can hide missed attacks or a poor false-positive rate.
   its `experiments/<model>/` folder.
 - Hyperparameters were selected on validation data only. The frozen test set was
   used once, after every modelling choice and decision threshold was locked.
-- XGBoost is strongest at the default `0.50` threshold, while Random Forest is
-  strongest at the validation-selected locked thresholds. See
+- XGBoost achieves the strongest threshold-independent ranking performance and
+  slightly stronger default-threshold results, while Random Forest provides the
+  preferred operating tradeoff at the validation-selected locked thresholds. See
   [`docs/standardized_model_evaluation.md`](docs/standardized_model_evaluation.md)
   for the full comparison and its scope.
 - Exact fresh Neural Network training can vary across Python, operating-system,
@@ -94,9 +95,10 @@ The project deliberately handles several UNSW-NB15 issues:
   training data; the test set itself remains untouched.
 - Preprocessing is fit on `X_train` only. Validation and test data are
   transformed without refitting imputers, scalers, or encoders.
-- TTL fields (`sttl`, `dttl`, `ct_state_ttl`) are treated as a dataset artifact.
-  The primary preprocessing artifacts exclude them; `*_with_ttl` artifacts are
-  reserved for the leakage/ablation comparison.
+- TTL fields (`sttl`, `dttl`, `ct_state_ttl`) are treated as potential
+  dataset-specific shortcut features. The primary preprocessing artifacts
+  exclude them, while `*_with_ttl` artifacts are retained for the ablation
+  comparison.
 
 ### Current data split
 
@@ -284,6 +286,45 @@ Each `experiments/<model>/test_predictions.csv` contains `sample_index`,
 > `experiments/standardized_evaluation/selected_thresholds.json`. Do not read
 > operating-point results out of `predicted_label`.
 
+## Interactive demo (supplemental)
+
+**Live dashboard:** https://intrusionml.vercel.app/
+
+`demo/` contains an optional interactive interface over the finalized models: a
+read-only FastAPI backend that loads all four frozen models and their fitted
+preprocessors, plus a Next.js frontend. It never retrains, tunes, or copies the
+project models, and it applies the validation-selected locked thresholds from
+`experiments/standardized_evaluation/selected_thresholds.json`. Reported
+`attack_probability` is `P(y = 1)`, where class `0` is normal and class `1` is
+attack.
+
+The demo is supplemental — the graded ML results stand on the scripts, documents,
+and committed outputs described above and do not require running it.
+
+```bash
+# Backend (from the repository root)
+python -m venv demo/api/.venv
+source demo/api/.venv/bin/activate
+python -m pip install -r requirements.txt
+python -m pip install -r demo/api/requirements.txt
+python -m pip install -r demo/api/requirements-dev.txt
+uvicorn demo.api.app.main:app --reload
+
+# Frontend (separate terminal)
+cd demo/frontend
+npm install
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000 npm run dev
+```
+
+Demo tests are run separately from the frozen root suite:
+
+```bash
+python -m pytest demo/api/tests/ -q   # run from the repository root
+cd demo/frontend && npm run lint && npm run test && npm run build
+```
+
+See [`demo/README.md`](demo/README.md) for the full demo documentation.
+
 ## Repository layout
 
 ```text
@@ -323,9 +364,12 @@ Each `experiments/<model>/test_predictions.csv` contains `sample_index`,
 │   ├── standardized_evaluation/   # Thresholds, comparison tables, figures
 │   └── diagnostics/               # Verified explainability and diagnostics outputs
 ├── docs/                          # Data card, EDA, baselines, results, reports
+├── demo/                          # Supplemental interactive demo (read-only)
+│   ├── api/                       # FastAPI backend over the frozen models
+│   ├── frontend/                  # Next.js interface
+│   └── fixtures/                  # Golden held-out prediction fixtures
 ├── TEAM_RESPONSIBILITIES.md        # Team ownership, deliverables, and handoffs
 ├── CONTRIBUTIONS.md                # What each team member contributed
-├── SUBMISSION_CHECKLIST.md         # Packaging notes for the final submission
 ├── requirements.txt
 └── EECS 3404 Major Project Idea.pdf
 ```
@@ -359,13 +403,6 @@ Results are written up in
 and [`docs/diagnostics_report.md`](docs/diagnostics_report.md). Team ownership
 and handoff rules are defined in
 [TEAM_RESPONSIBILITIES.md](TEAM_RESPONSIBILITIES.md).
-
-### Contributions to this component
-
-Paul contributed exploratory work toward the explainability and advanced
-diagnostics component. After review, the final diagnostics implementation used
-by the team was developed and verified by Shivam and is the version merged into
-`main` and described above.
 
 ## Limitations
 

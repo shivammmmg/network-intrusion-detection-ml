@@ -58,5 +58,10 @@ npm run test
 npm run build
 ```
 
-No live URL, deployment configuration, or Docker configuration is part of this
-phase.
+## Deployment configuration
+
+The repository includes optional container/deployment configuration for the
+backend — `demo/api/Dockerfile`, `railway.json`, and `.dockerignore`. A deployed
+version of the dashboard is available at https://intrusionml.vercel.app/. The
+deployment configuration is optional; the local backend and frontend commands
+above are sufficient to run and evaluate the demo independently.
