@@ -212,8 +212,7 @@ For each finalized model, May and Shivam should provide Sharwin and Paul with:
   preprocessing/artifact variant.
 
 Test predictions are handed off only after the model configuration is locked.
-The shared convention is a target structure for new experiments; it does not
-require retrofitting files that are not yet implemented in this repository.
+The shared convention is a target structure for new experiments.
 
 ```text
 experiments/

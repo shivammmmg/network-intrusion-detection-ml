@@ -47,7 +47,9 @@ give-away of the label).
 The TTL columns are the big one. Because the benign and attack traffic were
 generated on different machines, TTL basically encodes the class: 87% of attacks
 have `sttl=254`, and the single rule "`sttl >= 32` means attack" scores 92.1% on
-train by itself. That's an artifact of how the data was built, not a real signal.
+train by itself. This is evidence of a potential dataset-specific shortcut
+associated with how the benchmark was generated, rather than evidence that the
+feature will generalize as a genuine intrusion signal.
 We keep the columns but the main artifacts leave them out, and the number we
 report is the without-TTL one. The `*_with_ttl` artifacts exist only to show how
 much they inflate the result.

@@ -225,9 +225,9 @@ XGBoost currently appears stronger for ranking/separation and the fixed 0.5
 operating point, whereas RF catches slightly more attacks with more false
 positives. The project question— which model best balances malicious-traffic
 detection against false-positive alerts—cannot be finalized solely from this
-default-threshold snapshot. The standardized threshold analysis assigned to
-the downstream workflow remains the appropriate basis for the eventual
-operating-threshold decision.
+default-threshold snapshot. The standardized threshold analysis has since been
+completed and is the basis for the final operating-point comparison; see
+[`docs/standardized_model_evaluation.md`](standardized_model_evaluation.md).
 
 ## Figures
 
@@ -252,7 +252,9 @@ Generated figures:
   inherit the frozen test set's internal duplicate-row limitation.
 - Threshold optimization, FP/FN case analysis, SHAP/feature-importance
   interpretation, calibration, drift, TTL ablation, Logistic Regression, and
-  Neural Network analysis remain deferred to the assigned workflows.
+  Neural Network analysis are covered in the finalized
+  [`docs/standardized_model_evaluation.md`](standardized_model_evaluation.md)
+  and [`docs/diagnostics_report.md`](diagnostics_report.md).
 
 ## Reproducibility
 

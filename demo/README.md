@@ -1,4 +1,4 @@
-# Interactive demo — Phase 1 backend
+# Interactive demo — backend
 
 This supplemental interface reads the frozen EECS 3404 project at
 `4b8165aaaaaf00d4ed9a551e5f07ea38c7cb0072`. It does not retrain, tune, alter,
@@ -8,7 +8,7 @@ The API loads all four finalized models and their fitted preprocessors read-only
 from the repository root. It applies the validation-selected locked thresholds
 from the frozen standardized-evaluation output, not the models' default `0.50`
 labels. The public primary-model input contract has 39 fields and deliberately
-excludes the TTL leakage features.
+excludes the TTL-related potential shortcut features.
 
 Golden tests compare predictor-only held-out fixtures with committed frozen
 prediction outputs. This is an educational/research demonstration only, not a
@@ -39,7 +39,7 @@ Run demo tests separately from the frozen root suite:
 python -m pytest demo/api/tests/ -q
 ```
 
-## Frontend (Phase 2)
+## Frontend
 
 In a separate terminal, install and run the Next.js frontend:
 

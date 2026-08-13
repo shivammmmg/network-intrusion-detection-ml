@@ -49,8 +49,9 @@ Report precision/recall/F1/PR-AUC per split, not raw accuracy, because train
 baselines in `docs/baseline.md` on F1/PR-AUC.
 
 On TTL: the main artifacts leave the TTL features out on purpose. The `*_with_ttl`
-ones are only for the ablation section, since `sttl` alone scores 92% and that's a
-dataset artifact, not real detection. The without-TTL result is the one we report.
+ones are only for the ablation section, since `sttl` alone scores 92%, which is a
+potential dataset-specific shortcut signal. The without-TTL result is the one we
+report.
 
 ## Layout
 ```

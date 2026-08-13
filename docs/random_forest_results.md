@@ -278,5 +278,7 @@ substantial but was not exhaustive over every possible Random Forest parameter.
 The default threshold of 0.5 is not necessarily optimal for the final operating
 objective.
 
-Threshold analysis, SHAP, calibration, drift analysis, and TTL ablation are
-handled as later project work and are not part of this finalized experiment.
+Threshold analysis, SHAP, calibration, drift analysis, and TTL ablation are not
+part of this finalized experiment; they are covered in the finalized
+[standardized evaluation](standardized_model_evaluation.md) and
+[diagnostics report](diagnostics_report.md).
