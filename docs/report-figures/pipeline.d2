@@ -1,0 +1,96 @@
+# Figure 3.1, the leakage-safe preprocessing firewall.
+
+direction: right
+
+classes: {
+  data: {
+    style: {
+      fill: "#ffffff"
+      stroke: "#b0b0b0"
+      stroke-width: 2
+      font-color: "#000000"
+      border-radius: 6
+    }
+  }
+  frozen: {
+    style: {
+      fill: "#f2f2f2"
+      stroke: "#6e6e6e"
+      stroke-width: 2
+      stroke-dash: 4
+      font-color: "#000000"
+      border-radius: 6
+    }
+  }
+  artifact: {
+    style: {
+      fill: "#1f77b4"
+      stroke: "#1f77b4"
+      stroke-width: 2
+      font-color: "#ffffff"
+      border-radius: 6
+    }
+  }
+  model: {
+    style: {
+      fill: "#ffffff"
+      stroke: "#1f77b4"
+      stroke-width: 2
+      font-color: "#000000"
+      border-radius: 24
+    }
+  }
+}
+
+train: "Training\n79,685 rows" {
+  class: data
+}
+
+fitted: "Fitted artifact\nlearned values sealed" {
+  class: artifact
+}
+
+tr_out: "Training transformed\nfits the four models" {
+  class: data
+}
+
+va_out: "Validation · 19,922 rows\ntuning + threshold choice" {
+  class: data
+}
+
+te_out: "Test — FROZEN · 82,332 rows\nscored once, at the end" {
+  class: frozen
+}
+
+train -> fitted: "fit()\ntraining rows only" {
+  style: {
+    stroke: "#ff7f0e"
+    stroke-width: 4
+    font-color: "#ff7f0e"
+    bold: true
+    font-size: 20
+  }
+}
+
+fitted -> tr_out: "transform()" {
+  style: {
+    stroke: "#1f77b4"
+    stroke-width: 2
+    font-size: 17
+  }
+}
+fitted -> va_out: "transform()" {
+  style: {
+    stroke: "#1f77b4"
+    stroke-width: 2
+    font-size: 17
+  }
+}
+fitted -> te_out: "transform()" {
+  style: {
+    stroke: "#1f77b4"
+    stroke-width: 2
+    font-size: 17
+  }
+}
+

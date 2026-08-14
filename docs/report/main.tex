@@ -1,0 +1,2004 @@
+% Final report. Build with tectonic: tectonic --outdir . main.tex  (needs the figures/ tree alongside this file)
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  canadian,
+  12pt,
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  \setmainfont[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]{texgyretermes}
+\fi
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+\def\fps@figure{htbp}
+\makeatother
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off,]{babel}
+\else
+\usepackage[bidi=default,shorthands=off,]{babel}
+\fi
+\ifPDFTeX
+\else
+\babelfont{rm}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic]{texgyretermes}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\newif\ifshowtemplatecover \showtemplatecoverfalse
+\newif\ifshowtitlepage \showtitlepagetrue
+\newif\ifshowcontents \showcontentstrue
+\newif\ifshowlistoffigures \showlistoffiguresfalse
+\newif\ifshowlistoftables \showlistoftablesfalse
+\newif\ifshowdemoplate \showdemoplatetrue
+\newif\ifshowrunninghead \showrunningheadtrue
+
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{etoolbox}
+
+\setcounter{secnumdepth}{0}
+\setcounter{tocdepth}{2}
+
+\floatplacement{figure}{H}
+\floatplacement{table}{htbp}
+
+\captionsetup{
+  font=small,
+  labelformat=empty,     % captions already carry their own "Figure 3.1." label
+  justification=justified,
+  singlelinecheck=false,
+  skip=6pt
+}
+
+\setlist{topsep=3pt, itemsep=1.5pt, parsep=0pt}
+
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{14pt plus 3pt minus 2pt}{6pt}
+\titlespacing*{\subsection}{0pt}{11pt plus 2pt minus 2pt}{4pt}
+
+\titleformat{\subsubsection}[runin]{\normalfont\bfseries}{}{0pt}{}[.\hspace{0.5em}]
+\titlespacing*{\subsubsection}{0pt}{7pt plus 1pt minus 1pt}{0.5em}
+
+\usepackage{quoting}
+
+\usepackage[export]{adjustbox}
+
+\let\origincludegraphics\includegraphics
+\renewcommand{\includegraphics}[2][]{\origincludegraphics[#1,max width=\linewidth]{#2}}
+
+\setlength{\emergencystretch}{3em}
+\sloppy
+\usepackage{longtable}
+\AtBeginEnvironment{longtable}{\small}
+\AtBeginEnvironment{tabular}{\small}
+
+\setlength{\tabcolsep}{5pt}
+
+\AtBeginDocument{\hfuzz=1pt}
+
+\setkeys{Gin}{max width=\linewidth, max height=0.5\textheight, keepaspectratio}
+
+\usepackage[bottom]{footmisc}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\ifshowrunninghead
+  \fancyhead[L]{\small\itshape Explainable and Drift-Aware Machine Learning for Network Intrusion Detection}
+  \fancyhead[R]{\small\thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+\else
+  \fancyfoot[C]{\small\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+\fi
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \ifshowrunninghead
+    \fancyhead[L]{\small\itshape Explainable and Drift-Aware Machine Learning for Network Intrusion Detection}%
+    \fancyhead[R]{\small\thepage}%
+    \renewcommand{\headrulewidth}{0.4pt}%
+  \else
+    \fancyfoot[C]{\small\thepage}%
+    \renewcommand{\headrulewidth}{0pt}%
+  \fi
+}
+
+\usepackage{needspace}
+\AtBeginDocument{%
+  \let\reportOrigSection\section
+  \renewcommand{\section}{\par\Needspace*{10\baselineskip}\reportOrigSection}%
+  \let\reportOrigSubsection\subsection
+  \renewcommand{\subsection}{\par\Needspace*{8\baselineskip}\reportOrigSubsection}%
+  \let\reportOrigSubsubsection\subsubsection
+  \renewcommand{\subsubsection}{\par\Needspace*{5\baselineskip}\reportOrigSubsubsection}%
+}
+
+\widowpenalty=10000
+\clubpenalty=10000
+
+\usepackage[most]{tcolorbox}
+
+\makeatletter
+\newif\ifreportTwoCol
+\if@twocolumn\reportTwoColtrue\fi
+\makeatother
+
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\bfseries}
+\renewcommand{\cftsecpagefont}{\bfseries}
+\setlength{\cftbeforesecskip}{7pt}
+\setlength{\cftbeforesubsecskip}{1.5pt}
+\setlength{\cftsecnumwidth}{1.5em}
+\setlength{\cftsubsecnumwidth}{2.1em}
+\renewcommand{\cfttoctitlefont}{\Large\bfseries}
+\renewcommand{\cftloftitlefont}{\Large\bfseries}
+\renewcommand{\cftlottitlefont}{\Large\bfseries}
+
+\renewcommand{\cftfigpresnum}{}
+\renewcommand{\cftfigaftersnum}{}
+\setlength{\cftfignumwidth}{0pt}
+\renewcommand{\cfttabpresnum}{}
+\renewcommand{\cfttabaftersnum}{}
+\setlength{\cfttabnumwidth}{0pt}
+
+\PassOptionsToPackage{linktoc=page}{hyperref}
+
+\AtBeginDocument{\let\maketitle\relax}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Explainable and Drift-Aware Machine Learning for Network Intrusion Detection},
+  pdflang={en-CA},
+  colorlinks=true,
+  linkcolor={RoyalBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={RoyalBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Explainable and Drift-Aware Machine Learning for Network
+Intrusion Detection}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{EECS 3404 --- Applied Machine Learning, Summer 2026}
+\author{}
+\date{August 13, 2026}
+
+\begin{document}
+\maketitle
+
+
+\ifshowtemplatecover
+\thispagestyle{empty}
+\begingroup
+\raggedright
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\microtypesetup{activate=false}
+
+\vspace*{2em}
+{\large\bfseries Explainable and Drift-Aware Machine Learning for Network Intrusion Detection\par}
+\vspace{1.5em}
+Course: EECS 3404 --- Applied Machine Learning\par
+\vspace{1.5em}
+\textbf{Member 1}\par
+York Email Address: shivam11@my.yorku.ca\par
+Student Number: 219923309\par
+First Name: Shivam\par
+Last Name: Gupta\par
+\vspace{0.8em}
+\textbf{Member 2}\par
+York Email Address: savy@my.yorku.ca\par
+Student Number: 219520469\par
+First Name: Sharwin\par
+Last Name: Verma\par
+\vspace{0.8em}
+\textbf{Member 3}\par
+York Email Address: paulk21@my.yorku.ca\par
+Student Number: 221229323\par
+First Name: Paul\par
+Last Name: Ko\par
+\vspace{0.8em}
+\textbf{Member 4}\par
+York Email Address: iscmt@my.yorku.ca\par
+Student Number: 219899483\par
+First Name: Isaac\par
+Last Name: Mallampati\par
+\vspace{0.8em}
+\textbf{Member 5}\par
+York Email Address: may195@my.yorku.ca\par
+Student Number: 219826403\par
+First Name: Gunmay\par
+Last Name: Anand\par
+\vspace{0.8em}
+Submission Date: Summer 2026\par
+\endgroup
+\clearpage
+
+\fi
+\ifshowtitlepage
+\begin{titlepage}
+\raggedright
+\setlength{\parindent}{0pt}
+
+\vspace*{-0.7cm}
+
+\noindent
+\begin{minipage}[c]{0.55\linewidth}\raggedright
+\includegraphics[height=1.9cm]{figures/lassonde.png}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.4\linewidth}\raggedleft
+\includegraphics[height=1.9cm]{figures/yorku-vertical.png}
+\end{minipage}
+
+\vspace{1.7cm}
+
+{\huge\bfseries Explainable and Drift-Aware Machine Learning for Network
+Intrusion Detection\par}
+
+\vspace{0.7em}
+\rule{0.3\linewidth}{0.3pt}
+\vspace{0.7em}
+
+{\large Applied Machine Learning}\\[0.35em]
+{\large EECS 3404, Summer 2026}\\[0.35em]
+{\large Professor Navid Mohaghegh}
+
+\vspace{0.7em}
+\rule{0.3\linewidth}{0.3pt}
+\vspace{0.7em}
+
+shivam11@my.yorku.ca\\
+219923309\\
+Shivam\\
+Gupta\\[0.55em]
+savy@my.yorku.ca\\
+219520469\\
+Sharwin\\
+Verma\\[0.55em]
+paulk21@my.yorku.ca\\
+221229323\\
+Paul\\
+Ko\\[0.55em]
+iscmt@my.yorku.ca\\
+219899483\\
+Isaac\\
+Mallampati\\[0.55em]
+may195@my.yorku.ca\\
+219826403\\
+Gunmay\\
+Anand\\[0.55em]
+
+\end{titlepage}
+
+\fi
+
+\ifreportTwoCol\onecolumn\fi
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+\ifshowcontents\tableofcontents\fi
+
+\vspace{2em}
+{\renewcommand{\numberline}[1]{}%
+\ifshowlistoffigures\listoffigures\fi
+\ifshowlistoftables\vspace{2.5em}\listoftables\fi}
+
+\ifshowdemoplate
+\vfill
+\begin{center}
+\begin{tcolorbox}[enhanced, sharp corners, boxrule=0.5pt, colframe=black!55,
+  colback=white, width=0.94\linewidth, left=10pt, right=10pt, top=8pt, bottom=8pt,
+  fontupper=\footnotesize]
+\raggedright
+\textbf{Interactive demo.} A live inference console for the four finalized models is
+published at \href{https://intrusionml.vercel.app/}{intrusionml.vercel.app}. It serves the
+frozen model artifacts rather than retraining, and provides single-flow detection, a
+side-by-side comparison of the four models at their locked decision thresholds, and the
+diagnostics reported in \hyperref[sec-6]{Section~6}.
+
+\medskip
+\textbf{Source code.} The complete project is available at:
+\href{https://github.com/shivammmmg/network-intrusion-detection-ml}{github.com/shivammmmg/network-intrusion-detection-ml}.
+It holds the data preparation, the shared preprocessing pipeline, model training and
+tuning, standardized evaluation, diagnostics, and the saved artifacts every number in this
+report was computed from.
+
+\medskip
+\textbf{Video walkthrough.} The project video is available at:
+\href{https://youtu.be/BNJ4pm7IGYs}{youtu.be/BNJ4pm7IGYs}.
+
+\medskip
+\textbf{Companion slides.} The slide deck presented in the video walkthrough is available at:
+\href{https://canva.link/yrd7u2uh7jxie2f}{canva.link/yrd7u2uh7jxie2f}.
+\end{tcolorbox}
+\end{center}
+\fi
+
+\ifreportTwoCol\twocolumn\else\clearpage\fi
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\section{Abstract}\label{sec-abstract}
+
+Network intrusion detection must identify malicious traffic while
+limiting false alarms. This project compares Logistic Regression, a
+Neural Network, Random Forest, and XGBoost on UNSW-NB15 to determine
+which model best balances attack detection and false-positive burden. A
+leakage-aware workflow was used with duplicate and overlapping records
+removed, training-only preprocessing, validation-based hyperparameter
+and threshold selection, and final evaluation on a frozen 82,332-record
+test set.
+
+At the locked thresholds, Random Forest achieved the strongest operating
+balance, with test F1 = 0.8909, recall = 0.9849, and 686 false
+negatives. XGBoost achieved the strongest threshold-independent ranking,
+with PR-AUC = 0.9859 and ROC-AUC = 0.9809. SHAP, calibration, drift
+analysis, and TTL-feature ablation were used to examine model behaviour
+and dataset-specific risks. Overall, Random Forest was preferred for the
+operating objective, while XGBoost ranked traffic most effectively
+across thresholds.
+
+\section[\texorpdfstring{\numberline{1.}Introduction}{1. Introduction}]{1. Introduction}\label{sec-1}
+
+\subsection[\texorpdfstring{\numberline{1.1}Problem Definition and Motivation}{1.1 Problem Definition and Motivation}]{1.1 Problem Definition and Motivation}\label{sec-1-1}
+
+This project frames intrusion detection as binary classification, where
+class 0 represents normal traffic and class 1 represents attack traffic.
+Each model produces P(y=1), which is converted to a prediction using a
+decision threshold.
+
+Accuracy alone is insufficient because false negatives represent missed
+attacks, while false positives create unnecessary alerts. Models are
+therefore evaluated using precision, recall, F1-score, ROC-AUC, PR-AUC,
+and false-positive and false-negative counts.
+
+\subsection[\texorpdfstring{\numberline{1.2}Research Question}{1.2 Research Question}]{1.2 Research Question}\label{sec-1-2}
+
+\textbf{Which machine-learning model provides the best balance between
+detecting malicious network traffic and minimizing false-positive
+alerts?}
+
+\subsection[\texorpdfstring{\numberline{1.3}Project Contributions}{1.3 Project Contributions}]{1.3 Project Contributions}\label{sec-1-3}
+
+The project compares four models under the same leakage-aware
+train/validation/test framework, with hyperparameters and thresholds
+selected using validation data only. Final models are analyzed using
+SHAP, permutation importance, calibration, drift analysis, and
+TTL-feature ablation. Reproducibility checks verify split integrity and
+agreement between saved artifacts and committed predictions, while an
+inference API and dashboard provide the final integration layer.
+
+\section[\texorpdfstring{\numberline{2.}Dataset and Data Preparation}{2. Dataset and Data Preparation}]{2. Dataset and Data Preparation}\label{sec-2}
+
+\subsection[\texorpdfstring{\numberline{2.1}UNSW-NB15 Dataset}{2.1 UNSW-NB15 Dataset}]{2.1 UNSW-NB15 Dataset}\label{sec-2-1}
+
+This project used UNSW-NB15, a network intrusion-detection dataset
+{[}1{]}. The raw traffic was generated on the IXIA PerfectStorm testbed,
+a commercial appliance that mixes real background traffic with
+synthesized attacks, and aggregated into the per-connection flow records
+that are this dataset's rows {[}2{]}. The attack traffic spans nine
+families. Each record describes one network flow across 45 columns,
+among them the sliding-window connection-count features prefixed
+\texttt{ct\_} that \hyperref[sec-2-4]{Section 2.4} returns to.
+
+The published, pre-partitioned CSV files were used rather than a fresh
+random split of the combined data. Most published UNSW-NB15 results are
+reported under this partition, so preserving it keeps these results
+comparable, and a reshuffle would merge the files before deduplication,
+scattering repeated predictor vectors across both sides of the split.
+
+\begin{longtable}[]{@{}lrrr@{}}
+\caption{Table 2.1. Raw class balance in the published UNSW-NB15
+partition.}\tabularnewline
+\toprule\noalign{}
+Raw file & Rows & Class 0 (normal) & Class 1 (attack) \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Raw file & Rows & Class 0 (normal) & Class 1 (attack) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Training & 175,341 & 56,000 (31.9\%) & 119,341 (68.1\%) \\
+Testing & 82,332 & 37,000 (44.9\%) & 45,332 (55.1\%) \\
+\end{longtable}
+
+The two files also differ in class balance, so a model fitted on one is
+scored on a different mixture.
+
+\subsection[\texorpdfstring{\numberline{2.2}Binary Classification Setup}{2.2 Binary Classification Setup}]{2.2 Binary Classification Setup}\label{sec-2-2}
+
+The target column \texttt{label} takes the value 0 for normal traffic
+and 1 for attack traffic, and the score produced by every model in this
+report is \texttt{attack\_probability} = P(y = 1).
+
+Two columns were removed from the predictor set. \texttt{attack\_cat}
+names the attack family and restates the target, since
+\texttt{attack\_cat\ ==\ "Normal"} is exactly the condition
+\texttt{label\ ==\ 0}, so retaining it would supply the label directly.
+It is kept in the stored raw data but excluded from every model input.
+\texttt{id} is a row counter carrying no information. Removing both
+leaves 42 predictors.
+
+\subsection[\texorpdfstring{\numberline{2.3}Data Cleaning and Duplicate Handling}{2.3 Data Cleaning and Duplicate Handling}]{2.3 Data Cleaning and Duplicate Handling}\label{sec-2-3}
+
+\textbf{Cleaning (stateless).} Every rule is a constant, so the
+identical function applies to all three splits without creating a
+dependency between them. \texttt{is\_ftp\_login} is documented as binary
+but contains values up to 4, so it was clamped to 1.
+\texttt{ct\_ftp\_cmd} was coerced to numeric, because other releases
+store it with whitespace strings that silently convert the column to
+text. Neither published file reports a missing value, so the rules
+filling \texttt{ct\_flw\_http\_mthd}, \texttt{is\_ftp\_login}, and
+\texttt{ct\_ftp\_cmd} with 0 are guards against other UNSW-NB15
+releases. The three text columns were stripped of surrounding whitespace
+and lowercased.
+
+\textbf{Deduplication.} If two identical records are separated by the
+train/validation split, the model is evaluated on a row it has memorized
+and the validation score is optimistic. Deduplication was therefore
+applied before the validation slice was taken. The key is the 42 model
+predictors plus \texttt{label}, excluding \texttt{id} and
+\texttt{attack\_cat}. It removed 74,072 same-label predictor duplicates,
+almost all of the resulting 43.2\% reduction.
+
+A second class of record required different treatment. 229 predictor
+vectors, accounting for 458 rows, appear with both class labels:
+identical across every model input, opposite in target. No model can
+distinguish them and any single label would be arbitrary, so all 458
+rows were removed. This is label ambiguity in the source data, not a
+leakage channel, and is reported separately for that reason.
+
+An earlier version of this split included \texttt{attack\_cat} in the
+deduplication key, which was a mistake. Because \texttt{attack\_cat} is
+not a model input, two rows identical across all 42 predictors and
+\texttt{label} could survive as separate records purely by carrying
+different attack-family names, then be separated by the train/validation
+split. An independent audit found 1,565 validation rows, 7.38\% of the
+validation split, whose full predictor vector matched at least one
+training row, arising from 995 distinct predictor vectors. The dataset
+was regenerated with \texttt{attack\_cat} removed from the key, and
+every number in this report comes from the corrected split. The defect
+affected validation scores only; the frozen test set was never
+implicated.
+
+\begin{longtable}[]{@{}lrr@{}}
+\caption{Table 2.2. Row accounting from raw training file to development
+pool.}\tabularnewline
+\toprule\noalign{}
+Step & Removed & Remaining \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Step & Removed & Remaining \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Raw training file & & 175,341 \\
+Same-label predictor duplicates & 74,072 & 101,269 \\
+Ambiguous vectors (229 of them) & 458 & 100,811 \\
+Predictors also in the test partition & 1,204 & 99,607 \\
+\end{longtable}
+
+Most of the removed rows were attack flows, so the pool that remains is
+48.4\% attack rather than the training file's 68.1\%, close to the
+frozen test partition.
+
+\subsection[\texorpdfstring{\numberline{2.4}Leakage Investigation and Prevention}{2.4 Leakage Investigation and Prevention}]{2.4 Leakage Investigation and Prevention}\label{sec-2-4}
+
+Four candidate leakage channels were examined.
+
+\textbf{1. \texttt{attack\_cat} as a restatement of the label.} Dropped
+from the predictor set (\hyperref[sec-2-2]{Section 2.2}).
+
+\textbf{2. The TTL columns.} \texttt{sttl}, \texttt{dttl}, and
+\texttt{ct\_state\_ttl} carry a strong association with the class that
+reference {[}7{]} attributes to dataset construction. Explained in
+\hyperref[sec-2-5]{Section 2.5}.
+
+\textbf{3. Cross-partition predictor overlap.} After deduplication,
+1,204 development rows had predictor values identical to a test row and
+were removed, since such a row can be memorized in training and then
+scored again at test time. The match read predictor values only, never a
+test label: rows were deleted from development data alone, and no test
+row was removed or resampled at any stage. The price is that information
+about which predictor patterns occur in the test partition was used to
+shape the development data.
+
+The overlap key is the full 42-predictor vector, including the three TTL
+columns the primary models never see, so two flows identical in the 39
+features a primary model reads but differing in TTL survive the removal.
+A direct check of the 39-feature representation against the frozen test
+partition finds 2 such rows in the 99,607-row development
+pool.\footnote{This figure was produced by re-running the split pipeline
+  outside the repository and is not a committed project output.} The
+split script raises an error if any duplicate predictor vector survives
+into the split stage under the 42-predictor key.
+
+\textbf{4. The \texttt{ct\_*} connection-count features.} This channel
+cannot be removed. These sliding-window features were computed over the
+capture as a whole, so they carry information across a train/test
+boundary drawn afterwards. Removing them would discard a substantial and
+genuinely informative part of the feature set, so they were kept and
+\hyperref[sec-9]{Section 9} notes the limitation.\footnote{Inferred from
+  the feature definitions, which count over the last 100 connections in
+  time order. The authors do not state whether these were computed
+  before or after partitioning.}
+
+Under the 42-predictor key, the regenerated split shares no predictor
+vector between any two of training, validation and test.
+
+\subsection[\texorpdfstring{\numberline{2.5}TTL-Feature Decision}{2.5 TTL-Feature Decision}]{2.5 TTL-Feature Decision}\label{sec-2-5}
+
+The single rule ``\texttt{sttl\ \textgreater{}=\ 32} implies attack''
+reaches 92.1\% accuracy on the raw training file with no model at all.
+That figure is measured before the cleaning and splitting of
+\hyperref[sec-2-3]{Section 2.3}, so it describes the published data, not
+the 79,685-row training split.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.85\linewidth,height=\textheight,keepaspectratio,alt={Figure 2.1. sttl by class in the raw training file. Not one attack flow carries the modal benign value of 31, and 103,513 of them carry 254. The separation is incomplete: 11,230 normal flows also carry 254.}]{figures/isaac/fig_sttl_leak.png}
+\caption[Figure 2.1. sttl by class in the raw training file.]{Figure 2.1. \texttt{sttl} by class in the raw training file.
+Not one attack flow carries the modal benign value of 31, and 103,513 of
+them carry 254. The separation is incomplete: 11,230 normal flows also
+carry 254.}
+\end{figure}
+
+A single unlearned threshold reaching 92.1\% is not plausible as genuine
+detection performance. Reference {[}7{]} attributes the association to
+the routing topology of the IXIA PerfectStorm testbed the data was
+generated on. On that reading the feature is a fingerprint of how the
+data was collected, not a property of network behaviour.
+
+The TTL columns were retained in the stored data but excluded from the
+primary fitted preprocessors, with separate \texttt{*\_with\_ttl}
+variants built for a labelled ablation. Every headline result in this
+report is the without-TTL result.
+
+The exclusion was expected to lower every reported number, and it did
+not. \hyperref[sec-6-11]{Section 6.11} refits the XGBoost model with the
+three TTL columns restored and finds frozen-test average precision
+moving from 0.9859 to 0.9870, with F1 at the locked threshold moving
+from 0.8887 to 0.8910. The move in average precision is roughly the
+width of its own 95\% bootstrap interval on these rows, which
+\hyperref[sec-7]{Section 7} gives as {[}0.9854, 0.9864{]}. Reference
+{[}7{]} ablates the same three columns on this dataset and also finds
+almost no movement, 0.677 to 0.694, though its detector is near chance
+and it re-splits the files, so the agreement is directional.
+
+The information TTL carries is also present in the remaining 39
+features, so excluding it removes the most visible instance of the
+testbed signature, not the signature itself. \hyperref[sec-6-9]{Section
+6.9} measures drift across the primary features and arrives at the same
+place. The exclusion still stands, since a model resting on a single
+unstable column is more brittle in deployment than one whose benchmark
+score matches it, but it does not make the pipeline drift-aware.
+
+\section[\texorpdfstring{\numberline{3.}Experimental Methodology}{3. Experimental Methodology}]{3. Experimental Methodology}\label{sec-3}
+
+\subsection[\texorpdfstring{\numberline{3.1}Train / Validation / Test Strategy}{3.1 Train / Validation / Test Strategy}]{3.1 Train / Validation / Test Strategy}\label{sec-3-1}
+
+\textbf{Test.} The frozen test set is the published testing partition,
+cleaned by the stateless rules of \hyperref[sec-2-3]{Section 2.3} and
+otherwise unaltered. No row was removed or modified, no hyperparameter
+or threshold was chosen using it, and no label was read before the
+single scoring at the end. The one preprocessing decision that used test
+predictor values was the overlap audit of \hyperref[sec-2-4]{Section
+2.4}, which read no labels and deleted only development rows.
+
+\textbf{Development pool and validation.} The pool of 99,607 rows was
+split 80/20, stratified on \texttt{label}. The carve-out came last,
+after cleaning, deduplication, removal of the ambiguous vectors and
+removal of the test overlap, so training/validation overlap cannot occur
+by construction.
+
+\begin{longtable}[]{@{}lrrr@{}}
+\caption{Table 3.1. Final splits.}\tabularnewline
+\toprule\noalign{}
+Split & Rows & Class 0 (normal) & Class 1 (attack) \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Split & Rows & Class 0 (normal) & Class 1 (attack) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Training & 79,685 & 51.57\% & 48.43\% \\
+Validation & 19,922 & 51.57\% & 48.43\% \\
+Test (frozen) & 82,332 & 44.94\% & 55.06\% \\
+\end{longtable}
+
+The split was produced once and used unchanged by the whole team, so
+\hyperref[sec-5]{Section 5} compares models measured on the same
+validation rows.
+
+The development pool was deduplicated and the test partition was not, so
+that the test set remains the canonical published benchmark. The cost is
+real: 34,704 test rows (42.2\%) belong to repeated predictor-vector
+groups within the partition, so repeated flows carry proportionally more
+weight in every test metric here. \hyperref[sec-7]{Section 7} shows what
+this does to the bootstrap intervals.
+
+\subsection[\texorpdfstring{\numberline{3.2}Leakage-Safe Preprocessing}{3.2 Leakage-Safe Preprocessing}]{3.2 Leakage-Safe Preprocessing}\label{sec-3-2}
+
+\texttt{fit()} was called on the training split only. Validation and
+test received \texttt{transform()} and never \texttt{fit()} or
+\texttt{fit\_transform()}.
+
+\begin{figure}
+\centering
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio,alt={Figure 3.1. The preprocessing firewall. Every quantity the pipeline learns is estimated from training rows alone.}]{figures/isaac/fig_pipeline.png}
+\caption[Figure 3.1. The preprocessing firewall.]{Figure 3.1. The preprocessing firewall. Every quantity the
+pipeline learns is estimated from training rows alone.}
+\end{figure}
+
+The fitted objects estimate the imputation medians, the scaler's median
+and interquartile range, the one-hot vocabulary, and the thresholds
+folding rare levels together. Fitted on the full dataset, each would
+carry a summary of the validation and test distributions into training,
+and the reported scores would be optimistic by an amount that cannot be
+measured afterwards.
+
+Two representations were built. The linear one, serving logistic
+regression and the neural network, applies median imputation, then
+\texttt{RobustScaler}, then one-hot encoding. \texttt{RobustScaler} was
+chosen over standardization because flow features such as
+\texttt{sbytes} and \texttt{sload} are heavily right-tailed, and a
+scaler built on the mean and standard deviation is pulled around by a
+few very large flows. The encoder folds infrequent levels together
+(minimum frequency 10, maximum 30 categories per column), preventing
+\texttt{proto}, whose 133 training levels are a long tail of rare
+protocols, from expanding into a wide, almost empty block.
+
+The tree representation skips scaling, since axis-aligned splits are
+invariant to monotone rescaling, and ordinal-encodes the categoricals to
+integer codes, because one-hot encoding them fragments tree splits
+across many near-empty indicators. Integer codes impose an arbitrary
+ordering on nominal categories, so a split can only separate categories
+falling on opposite sides of a code boundary. That was accepted for a
+compact baseline encoding, and XGBoost's native categorical handling was
+not evaluated.
+
+Both encoders handle categories absent at fitting time, the one-hot
+encoder by mapping them to the infrequent bucket and the ordinal encoder
+by assigning −1. This is necessary because 2 of the \texttt{state}
+levels present in the testing partition never appear in training.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2405}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1392}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2278}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1772}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1013}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1139}}@{}}
+\caption[Table 3.2. Fitted preprocessors.]{Table 3.2. Fitted preprocessors. Each name carries a
+\texttt{preprocess\_} prefix and a \texttt{.joblib} suffix in
+\texttt{artifacts/}.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Preprocessor
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Serves
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Encoding
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Scaling
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Features
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+TTL
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Preprocessor
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Serves
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Encoding
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Scaling
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Features
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+TTL
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{linear} & LR, NN & One-hot, folded & RobustScaler & 66 &
+Excluded \\
+\texttt{tree} & RF, XGB & Ordinal & None & 39 & Excluded \\
+\texttt{linear\_with\_ttl} & Ablation & One-hot, folded & RobustScaler &
+69 & Included \\
+\texttt{tree\_with\_ttl} & Ablation & Ordinal & None & 42 & Included \\
+\end{longtable}
+
+Persisting the fitted objects, instead of sharing the preprocessing
+code, means a member loading a preprocessor and calling
+\texttt{transform()} cannot accidentally refit it on validation or test
+data.
+
+\subsection[\texorpdfstring{\numberline{3.3}Reproducibility Controls}{3.3 Reproducibility Controls}]{3.3 Reproducibility Controls}\label{sec-3-3}
+
+This section covers the data pipeline only. \hyperref[sec-8]{Section 8}
+covers repository organization, dependency management, and the integrity
+checks on frozen model outputs.
+
+A single seed, \texttt{RANDOM\_STATE\ =\ 42}, governs the validation
+split and every downstream stochastic operation in the shared pipeline,
+and the SHA-256 digests of both raw input files are recorded in the
+manifest, so any fitted preprocessor traces to the exact input bytes
+that produced it. The manifest stores only the first 16 hexadecimal
+characters of each digest, which is enough to detect an accidentally
+substituted file but is not a cryptographic integrity guarantee.
+
+\subsection[\texorpdfstring{\numberline{3.4}Baseline Models}{3.4 Baseline Models}]{3.4 Baseline Models}\label{sec-3-4}
+
+Two trivial classifiers establish the floor any real model must clear.
+The threshold-free column is average precision, written AP, that is, the
+mean of precision taken across the recall thresholds, not the
+trapezoidal area under the precision-recall curve. The two differ
+noticeably for a classifier that gives every row the same score. Average
+precision is also what the project code computes, using
+\texttt{average\_precision\_score}, so this same quantity appears under
+the PR-AUC label elsewhere in this report.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.2857}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1250}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1607}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1071}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.0714}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1071}}@{}}
+\caption[Table 3.3. Baseline performance.]{Table 3.3. Baseline performance. Positive class is Class 1
+(attack).}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Strategy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Split
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Accuracy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Precision
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Recall
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+F1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+AP
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Strategy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Split
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Accuracy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Precision
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Recall
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+F1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+AP
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{most\_frequent} & Validation & 0.5157 & 0.0000 & 0.0000 & 0.0000
+& 0.4843 \\
+\texttt{most\_frequent} & Test & 0.4494 & 0.0000 & 0.0000 & 0.0000 &
+0.5506 \\
+\texttt{stratified} & Validation & 0.4945 & 0.4780 & 0.4752 & 0.4766 &
+0.4813 \\
+\texttt{stratified} & Test & 0.4985 & 0.5506 & 0.4849 & 0.5157 &
+0.5506 \\
+\end{longtable}
+
+The majority-class baseline exposes the trap this dataset sets. Because
+the corrected development pool is 51.57\% normal,
+\texttt{most\_frequent} predicts Class 0 on every row, scoring 0.5157
+accuracy on validation with precision, recall, and F1 all exactly zero.
+A model reporting roughly 51\% accuracy here has learned nothing at all.
+The same classifier records 0.4494 on test purely because that partition
+has a different class balance, so the metric moved without the
+classifier changing. AP behaves the same way, collapsing to the
+positive-class prevalence of each split, so no metric is compared across
+validation and test as though the two were equivalent.
+
+\section[\texorpdfstring{\numberline{4.}Machine-Learning Models}{4. Machine-Learning Models}]{4. Machine-Learning Models}\label{sec-4}
+
+\subsection[\texorpdfstring{\numberline{4.1}Logistic Regression}{4.1 Logistic Regression}]{4.1 Logistic Regression}\label{sec-4-1}
+
+\subsubsection{Model Rationale}\label{model-rationale}
+
+Logistic Regression was used as the linear baseline against the Neural
+Network and tree ensembles. Its regularized linear decision boundary
+provides a useful test of how well the classes can be separated without
+nonlinear interactions.
+
+\subsubsection{Implementation and Hyperparameter
+Tuning}\label{implementation-and-hyperparameter-tuning}
+
+Hyperparameter selection used training and validation data only. A
+staged search compared compatible solver/penalty combinations,
+regularization strength \texttt{C}, and class weighting, followed by a
+30-configuration joint search, for 48 tuning fits total. Candidates were
+ranked by validation PR-AUC with ROC-AUC as the tie-breaker. The
+selected configuration achieved validation PR-AUC 0.913102 and ROC-AUC
+0.936002.
+
+\subsubsection{Selected Configuration}\label{selected-configuration}
+
+The finalized Logistic Regression model used \texttt{C\ =\ 100}, an L1
+penalty, the \texttt{liblinear} solver, no class weighting, and
+\texttt{random\_state\ =\ 42}. After the hyperparameter configuration
+was locked, the final train-only refit used \texttt{max\_iter\ =\ 10000}
+and \texttt{tol\ =\ 0.0001} to allow the selected model to fit more
+completely. The complete parameter set is provided in
+\hyperref[sec-app-a]{Appendix A}.
+
+\subsubsection{Results}\label{sec-4-1-results}
+
+\begin{longtable}[]{@{}lrr@{}}
+\caption{Table 4.1. Logistic Regression validation and frozen-test
+performance.}\tabularnewline
+\toprule\noalign{}
+Metric & Validation & Frozen test \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Metric & Validation & Frozen test \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Accuracy & 0.8863 & 0.7943 \\
+Precision & 0.8392 & 0.7478 \\
+Recall & 0.9464 & 0.9451 \\
+F1-score & 0.8896 & 0.8349 \\
+ROC-AUC & 0.9361 & 0.9065 \\
+PR-AUC & 0.9134 & 0.9275 \\
+\end{longtable}
+
+At the default 0.50 threshold, test recall remained high at about 0.945,
+while precision, F1-score, and ROC-AUC declined relative to validation.
+At the locked threshold of approximately 0.463, test recall increased to
+0.9533 and F1-score to 0.8370, with 2,119 false negatives.
+
+\subsubsection{Key Observations}\label{key-observations}
+
+Logistic Regression maintained high recall but produced a larger
+false-positive burden and weaker ROC-AUC/PR-AUC than the nonlinear
+models, indicating that a linear boundary was less effective on this
+dataset.
+
+\subsection[\texorpdfstring{\numberline{4.2}Neural Network}{4.2 Neural Network}]{4.2 Neural Network}\label{sec-4-2}
+
+\subsubsection{Model Rationale}\label{model-rationale-1}
+
+The Neural Network provided a nonlinear dense-model comparison with
+Logistic Regression and the tree ensembles, allowing interactions among
+transformed traffic features while supporting regularization and early
+stopping.
+
+\subsubsection{Implementation and Hyperparameter
+Tuning}\label{implementation-and-hyperparameter-tuning-1}
+
+Validation-only tuning examined hidden-layer structure, \texttt{alpha},
+learning rate, and batch size, with a final 24-configuration joint
+search and 50 tuning fits total. PR-AUC was the primary selection metric
+and ROC-AUC the tie-breaker. Early stopping used a fixed 10\% internal
+validation split; the winning configuration stopped after 28 epochs.
+
+\subsubsection{Selected Configuration}\label{selected-configuration-1}
+
+The finalized Neural Network used two hidden layers with 128 and 64
+neurons, ReLU activation, the Adam optimizer, \texttt{alpha\ =\ 0.0001},
+a learning rate of 0.0005, a batch size of 128, and
+\texttt{random\_state\ =\ 42}. The winning tuning run selected a
+28-epoch training budget. For the final train-only refit, early stopping
+was disabled and the model was trained for the full 28 epochs. The
+complete parameter set is provided in \hyperref[sec-app-a]{Appendix A}.
+
+\subsubsection{Results}\label{sec-4-2-results}
+
+\begin{longtable}[]{@{}lrr@{}}
+\caption{Table 4.2. Neural Network validation and frozen-test
+performance.}\tabularnewline
+\toprule\noalign{}
+Metric & Validation & Frozen test \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Metric & Validation & Frozen test \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Accuracy & 0.8883 & 0.8532 \\
+Precision & 0.9000 & 0.8157 \\
+Recall & 0.8655 & 0.9476 \\
+F1-score & 0.8824 & 0.8767 \\
+ROC-AUC & 0.9590 & 0.9599 \\
+PR-AUC & 0.9598 & 0.9702 \\
+\end{longtable}
+
+At the default 0.50 threshold, test recall increased to 0.9476 while
+precision declined to 0.8157; F1 remained relatively stable at 0.8767.
+Threshold-independent ranking performance also remained strong, with
+ROC-AUC increasing to 0.9599 and PR-AUC increasing from 0.9598 to
+0.9702.
+
+During the later standardized threshold analysis, a validation-selected
+threshold of approximately 0.345 was locked before test evaluation. At
+this operating point, the Neural Network achieved a test recall of
+0.9692 and F1-score of 0.8556 with 1,396 false negatives. The full
+threshold comparison is presented in \hyperref[sec-5]{Section 5}.
+
+\subsubsection{Key Observations}\label{key-observations-1}
+
+The Neural Network's main strength was its strong threshold-independent
+ranking performance, with frozen-test PR-AUC of 0.9702 and ROC-AUC of
+0.9599. However, ranking performance and operating-threshold performance
+exhibited different behaviour. After validation-based threshold
+selection, recall increased and false negatives decreased from 2,377 to
+1,396, but this came with lower precision and F1-score due to a larger
+false-positive burden. The model performed substantially better than
+Logistic Regression, however the tree-based models achieved stronger
+final operating performance.
+
+\subsection[\texorpdfstring{\numberline{4.3}Random Forest}{4.3 Random Forest}]{4.3 Random Forest}\label{sec-4-3}
+
+\subsubsection{Model Rationale}\label{model-rationale-2}
+
+Random Forest was selected as a nonlinear tree-ensemble model capable of
+capturing complex interactions among network-traffic features without
+requiring feature scaling. It also provides a useful comparison with
+XGBoost: Random Forest reduces variance by training many trees largely
+independently through bagging, whereas XGBoost builds trees sequentially
+through boosting.
+
+\subsubsection{Implementation and Hyperparameter
+Tuning}\label{implementation-and-hyperparameter-tuning-2}
+
+The model was implemented using
+\texttt{sklearn.\allowbreak{}ensemble.\allowbreak{}RandomForestClassifier} and the shared
+tree-model preprocessing pipeline. The final representation contained 39
+predictors, with the TTL-related variables \texttt{sttl}, \texttt{dttl},
+and \texttt{ct\_state\_ttl} excluded from the primary model and examined
+separately in the TTL ablation study. Class 1 represented attack
+traffic, and attack scores were obtained using
+\texttt{predict\_proba(){[}:,1{]}}. All experiments used
+\texttt{random\_state\ =\ 42}.
+
+Hyperparameter selection was performed using validation data only. A
+staged search first explored tree depth, minimum leaf size, feature
+subsampling, class weighting, and ensemble size. This was followed by a
+48-configuration joint search around the strongest regions, producing 79
+tuning fits in total. Validation PR-AUC was the primary selection
+metric, with ROC-AUC used as a tiebreaker.
+
+The selected configuration achieved validation PR-AUC of 0.984366 and
+ROC-AUC of 0.985987. The second-ranked configuration differed by only
+0.000005 PR-AUC, showing that several nearby configurations performed
+almost equivalently rather than one setting being decisively superior.
+
+\subsubsection{Selected Configuration}\label{selected-configuration-2}
+
+The finalized Random Forest used 800 trees, maximum depth 25, minimum
+leaf size 1, \texttt{max\_features\ =\ 0.3}, balanced class weighting,
+bootstrap sampling, and \texttt{random\_state\ =\ 42}. The complete
+parameter set is provided in \hyperref[sec-app-a]{Appendix A}.
+
+\subsubsection{Results}\label{sec-4-3-results}
+
+\begin{longtable}[]{@{}lrr@{}}
+\caption{Table 4.3. Random Forest validation and frozen-test
+performance.}\tabularnewline
+\toprule\noalign{}
+Metric & Validation & Frozen test \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Metric & Validation & Frozen test \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Accuracy & 0.9346 & 0.8688 \\
+Precision & 0.9168 & 0.8158 \\
+Recall & 0.9514 & 0.9841 \\
+F1-score & 0.9338 & 0.8920 \\
+ROC-AUC & 0.9860 & 0.9775 \\
+PR-AUC & 0.9844 & 0.9823 \\
+\end{longtable}
+
+The frozen-test results above use the default 0.50 threshold. Although
+threshold-dependent metrics decreased from validation to test, ranking
+performance remained strong, with PR-AUC of 0.9823 and ROC-AUC of
+0.9775.
+
+During the later standardized threshold analysis, a validation-selected
+threshold of approximately 0.493 was locked before test evaluation. At
+this operating point, Random Forest achieved test recall of 0.9849 and
+F1-score of 0.8909, with 686 false negatives. The full threshold
+comparison is presented in \hyperref[sec-5]{Section 5}.
+
+\subsubsection{Key Observations}\label{key-observations-2}
+
+Random Forest's main strength was its very high attack recall at the
+selected operating threshold. It missed fewer attacks than XGBoost while
+maintaining a similar false-positive burden. The tuning results also
+suggest that performance was stable near the chosen configuration, since
+multiple nearby hyperparameter settings produced almost identical
+validation PR-AUC.
+
+\subsection[\texorpdfstring{\numberline{4.4}XGBoost}{4.4 XGBoost}]{4.4 XGBoost}\label{sec-4-4}
+
+\subsubsection{Model Rationale}\label{model-rationale-3}
+
+XGBoost was selected as the second tree-ensemble model because gradient
+boosting is well suited to structured tabular data and can model
+nonlinear interactions while directly optimizing an additive ensemble.
+Unlike Random Forest, XGBoost builds trees sequentially so that each new
+tree improves the current model. It also provides explicit
+regularization, learning-rate control, row and feature subsampling, and
+early stopping during tuning.
+
+\subsubsection{Implementation and Hyperparameter
+Tuning}\label{implementation-and-hyperparameter-tuning-3}
+
+The model was implemented using \texttt{xgboost.\allowbreak{}sklearn.\allowbreak{}XGBClassifier}
+with the \texttt{binary:logistic} objective. It used the same 39-feature
+tree representation as Random Forest so that differences between the
+models reflected the learning algorithms rather than different
+preprocessing.
+
+Tuning examined tree structure, row and column sampling, regularization,
+and learning rate. A final 64-configuration joint search was conducted
+around the strongest regions, resulting in 113 tuning fits overall.
+Validation PR-AUC was used as the primary selection metric, with ROC-AUC
+as the tiebreaker.
+
+During tuning, candidates were allowed up to 2,000 estimators with
+\texttt{early\_\allowbreak{}stopping\_\allowbreak{}rounds\ =\ 50}. The winning run stopped at
+iteration 282. The final train-only model was then refitted using 283
+trees without a validation \texttt{eval\_set}, ensuring that the frozen
+model no longer depended on validation data during final fitting.
+
+The selected configuration achieved validation PR-AUC of 0.985938 and
+ROC-AUC of 0.987283. The second-ranked configuration achieved PR-AUC of
+0.985750, a difference of 0.000188.
+
+\subsubsection{Selected Configuration}\label{selected-configuration-3}
+
+The finalized XGBoost model used 283 trees, maximum depth 10, learning
+rate 0.1, \texttt{min\_child\_weight\ =\ 1}, full row sampling,
+\texttt{colsample\_bytree\ =\ 0.6}, L1 and L2 regularization values of
+1.0, the histogram tree method, and \texttt{random\_state\ =\ 42}. The
+full configuration is listed in \hyperref[sec-app-a]{Appendix A}.
+
+\subsubsection{Results}\label{sec-4-4-results}
+
+\begin{longtable}[]{@{}lrr@{}}
+\caption{Table 4.4. XGBoost validation and frozen-test
+performance.}\tabularnewline
+\toprule\noalign{}
+Metric & Validation & Frozen test \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Metric & Validation & Frozen test \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Accuracy & 0.9371 & 0.8711 \\
+Precision & 0.9251 & 0.8219 \\
+Recall & 0.9468 & 0.9778 \\
+F1-score & 0.9358 & 0.8931 \\
+ROC-AUC & 0.9873 & 0.9809 \\
+PR-AUC & 0.9859 & 0.9859 \\
+\end{longtable}
+
+At the default 0.50 threshold, XGBoost produced the stronger tree-model
+ranking results. Its frozen-test PR-AUC of 0.9859 and ROC-AUC of 0.9809
+were higher than the corresponding Random Forest values, and its
+default-threshold F1-score was also slightly higher.
+
+A validation-selected threshold of approximately 0.463 was later locked
+for standardized evaluation. At this operating point, XGBoost achieved
+test recall of 0.9805 and F1-score of 0.8887, with 883 false negatives.
+
+\subsubsection{Key Observations}\label{key-observations-3}
+
+XGBoost provided the strongest ranking and discrimination performance of
+the two tree models. However, ranking metrics and deployment operating
+metrics answer different questions. After validation-based threshold
+selection, Random Forest achieved higher recall and F1-score and
+produced 197 fewer false negatives than XGBoost, while generating only
+six additional false positives. Therefore, XGBoost was stronger at
+ordering attack traffic above normal traffic across thresholds, whereas
+Random Forest provided the preferred operating tradeoff under the
+project's locked F1-based threshold criterion. This distinction is
+examined in greater detail in \hyperref[sec-5]{Section 5}.
+
+\section[\texorpdfstring{\numberline{5.}Standardized Evaluation and Model Comparison}{5. Standardized Evaluation and Model Comparison}]{5. Standardized Evaluation and Model Comparison}\label{sec-5}
+
+\subsection[\texorpdfstring{\numberline{5.1}Evaluation Metrics}{5.1 Evaluation Metrics}]{5.1 Evaluation Metrics}\label{sec-5-1}
+
+All four finalized models were evaluated under the same binary protocol
+using accuracy, precision, recall, F1-score, ROC-AUC, PR-AUC, and
+false-positive/false-negative counts. Because intrusion detection
+requires balancing missed attacks against false-alert burden, no single
+metric was used in isolation.
+
+\subsection[\texorpdfstring{\numberline{5.2}Validation Threshold Analysis}{5.2 Validation Threshold Analysis}]{5.2 Validation Threshold Analysis}\label{sec-5-2}
+
+Decision-threshold selection was performed using validation predictions
+only before the frozen test set was evaluated.
+
+\begin{longtable}[]{@{}lr@{}}
+\caption[Table 5.1. Validation-selected decision thresholds.]{Table 5.1. Validation-selected decision thresholds, locked
+before frozen-test evaluation.}\tabularnewline
+\toprule\noalign{}
+Model & Selected threshold \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Model & Selected threshold \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Logistic Regression & 0.463120 \\
+Neural Network & 0.345453 \\
+Random Forest & 0.492968 \\
+XGBoost & 0.463061 \\
+\end{longtable}
+
+These thresholds were locked before final test evaluation, and the
+frozen test results were not used to retune models, modify
+preprocessing, select hyperparameters, or revise decision thresholds.
+
+\subsection[\texorpdfstring{\numberline{5.3}Default vs.~Selected Thresholds}{5.3 Default vs.~Selected Thresholds}]{5.3 Default vs.~Selected Thresholds}\label{sec-5-3}
+
+All four validation-selected thresholds were below 0.50, increasing
+recall and reducing false negatives on the frozen test set, generally at
+the cost of more false positives and lower precision. Logistic
+Regression was the only model whose selected threshold also improved
+test F1, from 0.834987 to 0.837039. The Neural Network showed the
+largest tradeoff, reducing false negatives from 2,377 to 1,396 while
+increasing false positives from 9,708 to 13,433. The locked thresholds
+were reported unchanged without test-based retuning.
+
+\subsection[\texorpdfstring{\numberline{5.4}Final Frozen-Test Results}{5.4 Final Frozen-Test Results}]{5.4 Final Frozen-Test Results}\label{sec-5-4}
+
+The final evaluation used the frozen test set of 82,332 samples,
+containing 45,332 attack samples and 37,000 normal samples. The
+validation-selected thresholds were applied exactly as locked, with no
+further tuning or adjustment based on test performance.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.3684}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1053}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1053}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1053}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1053}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1053}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1053}}@{}}
+\caption[Table 5.2. Final frozen-test performance using validation-selected decision\ldots]{Table 5.2. Final frozen-test performance using
+validation-selected decision thresholds.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Accuracy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Precision
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Recall
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+F1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+ROC-AUC
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+PR-AUC
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Accuracy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Precision
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Recall
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+F1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+ROC-AUC
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+PR-AUC
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Logistic Regression & 0.7956 & 0.7461 & 0.9533 & 0.8370 & 0.9065 &
+0.9275 \\
+Neural Network & 0.8199 & 0.7658 & 0.9692 & 0.8556 & 0.9599 & 0.9702 \\
+Random Forest & 0.8671 & 0.8132 & 0.9849 & 0.8909 & 0.9775 & 0.9823 \\
+XGBoost & 0.8648 & 0.8127 & 0.9805 & 0.8887 & 0.9809 & 0.9859 \\
+\end{longtable}
+
+Random Forest achieved the highest F1-score and recall, while XGBoost
+achieved the highest ROC-AUC and PR-AUC.
+
+\subsection[\texorpdfstring{\numberline{5.5}ROC and Precision-Recall Analysis}{5.5 ROC and Precision-Recall Analysis}]{5.5 ROC and Precision-Recall Analysis}\label{sec-5-5}
+
+\begin{figure}
+\centering
+\includegraphics[width=4.9272in,height=2.5957in,alt={Figure 5.1. Threshold-independent performance of the four finalized classifiers on the frozen test set: (a) ROC curves and (b) precision--recall curves.}]{figures/from-doc/Pictures/10000000000006D500000383E8A29CEA5D9C026A.png}
+\caption[Figure 5.1. Threshold-independent performance of the four finalized\ldots]{Figure 5.1. Threshold-independent performance of the four
+finalized classifiers on the frozen test set: (a) ROC curves and (b)
+precision--recall curves.}\label{fig-5-1}
+\end{figure}
+
+As shown in \hyperref[fig-5-1]{Figure 5.1}, XGBoost achieved the
+strongest threshold-independent ranking, with ROC-AUC 0.9809 and PR-AUC
+0.9859, followed closely by Random Forest at 0.9775 and 0.9823,
+respectively.
+
+\subsection[\texorpdfstring{\numberline{5.6}Confusion Matrices}{5.6 Confusion Matrices}]{5.6 Confusion Matrices}\label{sec-5-6}
+
+\begin{figure}
+\centering
+\includegraphics[width=5.2591in,height=3.7453in,alt={Figure 5.2. Confusion matrices for logistic regression, neural network, random forest, and XGBoost on the frozen test set using validation-selected thresholds.}]{figures/from-doc/Pictures/10000000000005A80000043E90D13B59140260CA.png}
+\caption[Figure 5.2. Confusion matrices for logistic regression.]{Figure 5.2. Confusion matrices for logistic regression, neural
+network, random forest, and XGBoost on the frozen test set using
+validation-selected thresholds.}\label{fig-5-2}
+\end{figure}
+
+As \hyperref[fig-5-2]{Figure 5.2} shows, Random Forest and XGBoost had
+nearly identical false-positive counts (10,253 vs.~10,247), but Random
+Forest produced 686 false negatives compared with 883 for XGBoost,
+detecting 197 additional attacks. Logistic Regression and the Neural
+Network produced 2,119 and 1,396 false negatives, respectively.
+
+\subsection[\texorpdfstring{\numberline{5.7}False-Positive and False-Negative
+Tradeoff}{5.7 False-Positive and False-Negative
+Tradeoff}]{5.7 False-Positive and False-Negative
+Tradeoff}\label{sec-5-7}
+
+At the locked thresholds, Random Forest detected 197 more attacks than
+XGBoost while generating only six additional false positives. Although
+XGBoost had slightly stronger ROC-AUC and PR-AUC, Random Forest
+therefore provided the better operating tradeoff for the project
+objective.
+
+\subsection[\texorpdfstring{\numberline{5.8}Answer to the Main Research Question}{5.8 Answer to the Main Research Question}]{5.8 Answer to the Main Research Question}\label{sec-5-8}
+
+At the locked validation-selected operating thresholds, Random Forest
+provided the strongest overall balance. It achieved the highest F1-score
+of 0.890862, the highest recall of 0.984867, and the fewest false
+negatives at 686. Its precision of 0.813239 was also slightly higher
+than XGBoost's 0.812655.
+
+Random Forest and XGBoost produced almost identical false-positive
+counts, with 10,253 and 10,247, respectively. However, Random Forest
+missed 197 fewer attacks, making it the preferred model for the
+project's operational objective. XGBoost still achieved the strongest
+threshold-independent ranking performance, with the highest ROC-AUC of
+0.980900 and PR-AUC of 0.985927. Therefore, Random Forest was preferred
+at the selected operating threshold, while XGBoost remained the
+strongest model for overall probability ranking across thresholds.
+
+\section[\texorpdfstring{\numberline{6.}Explainability and Advanced Diagnostics}{6. Explainability and Advanced Diagnostics}]{6. Explainability and Advanced Diagnostics}\label{sec-6}
+
+\subsection[\texorpdfstring{\numberline{6.1}SHAP Methodology and Output Scale}{6.1 SHAP Methodology and Output Scale}]{6.1 SHAP Methodology and Output Scale}\label{sec-6-1}
+
+Before diagnostics, a verification gate confirmed disjoint persisted
+train, validation, and test splits and agreement between frozen model
+artifacts and committed predictions. SHAP attributes each feature's
+contribution to a model output: positive values push toward attack and
+negative values toward normal traffic.
+
+Random Forest was explained on 500 test rows on the probability scale,
+while XGBoost was explained on all 82,332 test rows on the raw-margin
+(log-odds) scale. Feature rankings can therefore be compared across
+models, but SHAP magnitudes cannot.
+
+\subsection[\texorpdfstring{\numberline{6.2}Global SHAP Feature Importance}{6.2 Global SHAP Feature Importance}]{6.2 Global SHAP Feature Importance}\label{sec-6-2}
+
+SHAP indicates that both tree models relied on \texttt{ackdat} as their
+single most influential feature, but the next-highest features differ
+between the two. The difference is evidence of partially overlapping
+model reliance, but not proof that \texttt{ackdat} causes malicious
+traffic.
+
+\subsection[\texorpdfstring{\numberline{6.3}SHAP Beeswarm Analysis}{6.3 SHAP Beeswarm Analysis}]{6.3 SHAP Beeswarm Analysis}\label{sec-6-3}
+
+\begin{figure}
+\centering
+\includegraphics[width=3.2071in,height=3.8902in,alt={Figure 6.1. XGBoost SHAP beeswarm with raw-margin scale.}]{figures/from-doc/Pictures/10000201000005720000069BE9B41190A5CCAA7F.png}
+\caption{Figure 6.1. XGBoost SHAP beeswarm with raw-margin
+scale.}\label{fig-6-1}
+\end{figure}
+
+\hyperref[fig-6-1]{Figure 6.1} orders features by mean absolute SHAP
+value and shows the direction and magnitude of their contributions
+across test rows. \texttt{ackdat} and \texttt{dload} show the widest
+spread, indicating that both can strongly shift XGBoost predictions in
+either direction. These patterns describe fitted-model behaviour and do
+not establish causality or deployment stability.
+
+\subsection[\texorpdfstring{\numberline{6.4}Local TP/TN/FP/FN Explanations}{6.4 Local TP/TN/FP/FN Explanations}]{6.4 Local TP/TN/FP/FN Explanations}\label{sec-6-4}
+
+Representative TP, TN, FP, and FN cases were selected using the lowest
+sample index in each outcome group. For XGBoost, the representative
+false positive was test index 0 with attack probability 0.8185, while
+the representative false negative was index 283 with probability 0.2086.
+Local waterfall plots illustrate which features drove these specific
+errors but do not explain all model errors or establish causality.
+
+\subsection[\texorpdfstring{\numberline{6.5}Permutation Feature Importance}{6.5 Permutation Feature Importance}]{6.5 Permutation Feature Importance}\label{sec-6-5}
+
+Permutation importance measures the PR-AUC decrease when a feature is
+shuffled five times on the frozen test set. Both XGBoost and Random
+Forest ranked \texttt{ackdat} first, corroborating the SHAP result. As
+with SHAP, this indicates model reliance rather than causality.
+
+\subsection[\texorpdfstring{\numberline{6.6}False-Positive and False-Negative
+Analysis}{6.6 False-Positive and False-Negative
+Analysis}]{6.6 False-Positive and False-Negative
+Analysis}\label{sec-6-6}
+
+Random Forest produced the fewest false negatives (686), compared with
+883 for XGBoost, while the two tree models had nearly identical
+false-positive counts.
+
+\subsection[\texorpdfstring{\numberline{6.7}Probability Calibration}{6.7 Probability Calibration}]{6.7 Probability Calibration}\label{sec-6-7}
+
+Calibration evaluates whether predicted scores correspond to observed
+attack frequencies, unlike ROC-AUC and PR-AUC, which measure ranking.
+\hyperref[fig-6-2]{Figure 6.2} compares mean predicted scores with
+observed attack frequency; all four models show overconfidence in parts
+of the mid-to-upper score range.
+
+\begin{figure}
+\centering
+\includegraphics[width=3.4283in,height=2.9535in,alt={Figure 6.2. Reliability comparison across all four models.}]{figures/from-doc/Pictures/10000201000004EC00000438D011442C8BB4D74A.png}
+\caption{Figure 6.2. Reliability comparison across all four
+models.}\label{fig-6-2}
+\end{figure}
+
+\subsection[\texorpdfstring{\numberline{6.8}Brier Scores}{6.8 Brier Scores}]{6.8 Brier Scores}\label{sec-6-8}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\caption{Table 6.1. Calibration summary (final test
+split).}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Brier
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+ECE
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Worst-bin gap
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Conclusion
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Brier
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+ECE
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Worst-bin gap
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Conclusion
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Random Forest & 0.0843 & 0.0872 & -0.3260 & Lowest Brier, but locally
+overconfident. \\
+XGBoost & 0.0888 & 0.0942 & -0.4675 & Largest local overconfidence. \\
+Neural Network & 0.0976 & 0.0845 & -0.3381 & Local overconfidence
+remains \\
+Logistic Regression & 0.1406 & 0.0929 & -0.3151 & Weakest Brier among
+four. \\
+\end{longtable}
+
+Brier score and ECE summarize overall calibration but can hide severe
+errors within individual probability ranges. All four models have a
+negative worst-bin gap, indicating local overconfidence. Their outputs
+should therefore be treated primarily as attack-ranking scores rather
+than uniformly calibrated real-world probabilities.
+
+\subsection[\texorpdfstring{\numberline{6.9}Train-vs-Test Distribution Drift}{6.9 Train-vs-Test Distribution Drift}]{6.9 Train-vs-Test Distribution Drift}\label{sec-6-9}
+
+The Population Stability Index (PSI) summarizes how much a feature's
+binned distribution changed between the no-TTL training data and the
+frozen test split. PSI \textgreater{} 0.2 is treated as elevated drift.
+The Kolmogorov-Smirnov (KS) statistic reports the largest gap between
+the two splits' cumulative distributions for numerical features, with a
+higher value indicating a larger distributional difference. Across the
+39 primary (no-TTL) features, 29 have PSI \textgreater{} 0.2. The shift
+illustrates how the two splits differ, but does not by itself establish
+that drift caused any particular change in test-set performance.
+
+\subsection[\texorpdfstring{\numberline{6.10}Important Features That Also Drift}{6.10 Important Features That Also Drift}]{6.10 Important Features That Also Drift}\label{sec-6-10}
+
+Several influential features also showed substantial train-to-test
+drift. For Random Forest, \texttt{dbytes} was both a top-five
+permutation feature and the largest KS-drift feature; for XGBoost,
+\texttt{dload} was second in permutation importance and third by KS.
+This overlap indicates generalization risk but does not prove that drift
+caused the observed errors.
+
+\subsection[\texorpdfstring{\numberline{6.11}TTL Ablation}{6.11 TTL Ablation}]{6.11 TTL Ablation}\label{sec-6-11}
+
+\begin{figure}
+\centering
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio,alt={Figure 6.3. TTL ablation: XGBoost frozen-test average precision and F1 at the locked threshold, with and without the TTL features. The shaded band is the 95\% bootstrap interval for the without-TTL model.}]{figures/isaac/fig_ttl_ablation.png}
+\caption[Figure 6.3. TTL ablation: XGBoost frozen-test average precision and F1 at\ldots]{Figure 6.3. TTL ablation: XGBoost frozen-test average precision
+and F1 at the locked threshold, with and without the TTL features. The
+shaded band is the 95\% bootstrap interval for the without-TTL
+model.}\label{fig-6-3}
+\end{figure}
+
+As \hyperref[fig-6-3]{Figure 6.3} shows, restoring the TTL features
+produced only a small PR-AUC gain but substantially changed XGBoost's
+feature reliance: \texttt{sttl} became the most important permutation
+feature while \texttt{ackdat} fell to rank 33. This supports excluding
+TTL as a precaution against a dataset-specific shortcut, although it
+does not prove that the TTL fields constitute leakage.
+
+\subsection[\texorpdfstring{\numberline{6.12}Diagnostics Summary}{6.12 Diagnostics Summary}]{6.12 Diagnostics Summary}\label{sec-6-12}
+
+Overall, SHAP and permutation importance agree that both tree models
+rely heavily on \texttt{ackdat}; calibration analysis shows local
+overconfidence; and 29 of 39 primary features exhibit elevated
+train-to-test drift. The TTL ablation further shows that a small
+excluded feature group can dominate model reliance for only marginal
+performance gain. The tree models therefore rank attacks strongly on
+this benchmark, but their probabilities, feature reliance, and behaviour
+under distribution shift warrant caution before deployment.
+
+\section[\texorpdfstring{\numberline{7.}Tree-Model Robustness and Computational
+Analysis}{7. Tree-Model Robustness and Computational
+Analysis}]{7. Tree-Model Robustness and Computational
+Analysis}\label{sec-7}
+
+Additional analysis compared Random Forest and XGBoost on uncertainty,
+computational efficiency, and tuning stability.
+
+\subsubsection{Bootstrap Uncertainty}\label{bootstrap-uncertainty}
+
+Using 2,000 paired bootstrap resamples of the frozen test rows (seed
+42), Random Forest achieved PR-AUC 0.9823 with a 95\% row-wise interval
+of {[}0.9816, 0.9829{]}, while XGBoost achieved 0.9859 with {[}0.9854,
+0.9864{]}. The paired XGBoost-minus-Random-Forest differences remained
+positive for both PR-AUC and ROC-AUC, supporting the stability of
+XGBoost's ranking advantage on this frozen test set. These intervals
+should be interpreted cautiously because 34,704 test rows belong to
+repeated predictor-vector groups; the bootstrap therefore characterizes
+row-wise uncertainty and may understate uncertainty over fully
+independent traffic patterns.
+
+\subsubsection{Computational Efficiency}\label{computational-efficiency}
+
+XGBoost was substantially lighter in the recorded local environment:
+
+\begin{longtable}[]{@{}lrr@{}}
+\caption{Table 7.1. Recorded cost and interval width for the two tree
+models.}\tabularnewline
+\toprule\noalign{}
+Metric & Random Forest & XGBoost \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Metric & Random Forest & XGBoost \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Final refit time & 22.573 s & 1.579 s \\
+Mean inference time & 0.4166 s & 0.0556 s \\
+Model artifact size & 84.0 MB & 3.65 MB \\
+PR-AUC 95\% CI & {[}0.9816, 0.9829{]} & {[}0.9854, 0.9864{]} \\
+\end{longtable}
+
+These measurements exclude preprocessing and are machine-specific.
+
+\subsubsection{Hyperparameter Stability and
+Generalization}\label{hyperparameter-stability-and-generalization}
+
+The top-ten validation PR-AUC range was only 0.000110 for Random Forest
+and 0.000275 for XGBoost, indicating several nearby configurations
+performed similarly. Random Forest also showed little benefit from
+increasing the ensemble beyond 800 trees. From validation to frozen
+test, Random Forest PR-AUC decreased by 0.0021, while XGBoost changed by
+approximately 0.00001. Default-threshold F1 decreased by about 0.042 for
+both models. This is consistent with observed train-to-test distribution
+differences, although the analysis does not establish that drift caused
+the decline.
+
+\section[\texorpdfstring{\numberline{8.}Reproducibility and Engineering Design}{8. Reproducibility and Engineering Design}]{8. Reproducibility and Engineering Design}\label{sec-8}
+
+The project was designed around a staged and reproducible ML workflow. A
+fixed random seed (\texttt{RANDOM\_STATE\ =\ 42}) was used throughout
+the primary pipeline, and the corrected dataset splits were persisted as
+79,685 training, 19,922 validation, and 82,332 frozen test samples.
+Preprocessing objects were fitted only on the training data and
+subsequently applied to validation and test data using
+transformation-only operations, preventing evaluation data from
+influencing fitted preprocessing parameters.
+
+Model development and threshold selection were also separated from final
+testing. Hyperparameters were selected using validation performance,
+while operating thresholds were chosen from saved validation predictions
+and then locked before being applied unchanged to the frozen test set.
+The final test stage performs no model fitting or threshold
+optimization.
+
+To support reproducibility across later stages, preprocessing pipelines,
+trained models, prediction files, selected thresholds, configurations,
+and provenance metadata were persisted as project artifacts.
+Standardized evaluation, diagnostics, and the demo reuse these frozen
+outputs rather than retraining the primary models. Integrity checks
+additionally verify zero persisted cross-split row overlap and compare
+predictions recomputed from frozen artifacts against committed
+prediction files within a tolerance of \(10^{-6}\).
+
+The repository also provides ordered execution instructions, pinned
+dependencies, dataset-retrieval scripts, manifests, and hashes for
+important inputs and artifacts. Therefore, the project supports
+\textbf{strong artifact-level reproducibility}, although exact
+bit-for-bit reconstruction across environments is not claimed because of
+minor recorded dependency-version differences. The frozen Random Forest
+artifact, configuration, and predictions remain internally consistent
+and provenance-verified.
+
+\section[\texorpdfstring{\numberline{9.}Limitations, Assumptions, and Failure Modes}{9. Limitations, Assumptions, and Failure Modes}]{9. Limitations, Assumptions, and Failure Modes}\label{sec-9}
+
+The results are specific to UNSW-NB15 and may not generalize to modern
+production networks. The dataset represents traffic from a controlled
+testbed and an earlier network environment, while this project uses
+binary classification rather than distinguishing individual attack
+categories. Strong frozen-test performance therefore does not establish
+real-world deployment readiness.
+
+Train and test distributions also differed substantially: 29 of 39
+primary no-TTL features exceeded the project's PSI threshold for
+elevated drift. This creates a generalization risk, although the
+analysis does not establish that drift caused any specific reduction in
+test performance.
+
+TTL-related features presented another dataset-specific risk. Restoring
+\texttt{sttl}, \texttt{dttl}, and \texttt{ct\_state\_ttl} produced only
+a small XGBoost performance gain, but \texttt{sttl} became the model's
+most important feature. This supports excluding TTL as a precaution
+against shortcut reliance, but does not prove that the features
+constitute data leakage or that all dataset-specific signals have been
+removed.
+
+Operationally, all models still produced substantial false-positive
+burdens. Random Forest and XGBoost generated 10,253 and 10,247 false
+positives at their locked thresholds, respectively. Threshold changes
+can also trade precision for recall: for the Neural Network, false
+negatives decreased from 2,377 to 1,396, while false positives increased
+from 9,708 to 13,433. High recall therefore does not by itself imply
+deployability.
+
+Finally, performance depends partly on the fixed validation split and
+assumes future inputs follow the same feature structure and format. The
+retained \texttt{ct\_*} features may contain information spanning the
+capture boundary, and the overlap audit used test predictor values, but
+not test labels, to remove overlapping development rows. Runtime
+measurements are also environment-specific and may not generalize to
+other hardware.
+
+\section[\texorpdfstring{\numberline{10.}Future Work}{10. Future Work}]{10. Future Work}\label{sec-10}
+
+Future work should evaluate the models on newer intrusion-detection
+datasets and network environments to test whether the results generalize
+beyond UNSW-NB15. Temporal validation, using earlier traffic for
+training and later traffic for evaluation, would provide a more
+realistic test under distribution shift.
+
+The current binary setup could also be extended to multiclass
+classification to distinguish individual attack categories. Probability
+recalibration should be investigated so predicted attack scores better
+reflect observed risk when traffic conditions change.
+
+Threshold selection could move beyond F1 by incorporating
+application-specific costs for false positives and false negatives.
+Future deployment studies should also examine latency, memory use, drift
+monitoring, and retraining or recalibration procedures.
+
+\section[\texorpdfstring{\numberline{11.}Conclusion}{11. Conclusion}]{11. Conclusion}\label{sec-11}
+
+This project compared Logistic Regression, a Neural Network, Random
+Forest, and XGBoost for binary intrusion detection on UNSW-NB15 using
+training-only preprocessing, validation-based model and threshold
+selection, and final evaluation on a frozen test set.
+
+At the locked thresholds, \textbf{Random Forest provided the preferred
+operating tradeoff}, achieving test F1 = 0.8909, recall = 0.9849, and
+only 686 false negatives. XGBoost missed 883 attacks with nearly the
+same number of false positives, so Random Forest detected 197 additional
+attacks at the cost of only six extra false alerts.
+
+\textbf{XGBoost achieved the strongest threshold-independent ranking
+performance}, with PR-AUC = 0.9859 and ROC-AUC = 0.9809. This shows that
+ranking quality and operating-threshold performance are distinct:
+XGBoost ranked traffic more effectively overall, while Random Forest
+performed better at the selected operating point.
+
+Diagnostics also identified important limitations, including local
+probability overconfidence, elevated train-to-test drift in 29 of 39
+primary features, and substantial feature-reliance changes in the TTL
+ablation. Overall, Random Forest was preferred for the project's
+intrusion-detection objective, while XGBoost remained the strongest
+ranking model. These results are specific to the controlled UNSW-NB15
+benchmark and do not establish deployment readiness or generalization to
+other networks.
+
+\clearpage
+
+\section{References}\label{sec-refs}
+
+{[}1{]} Australian Centre for Cyber Security, ``The UNSW-NB15 Dataset,''
+UNSW Canberra.
+\url{https://research.unsw.edu.au/projects/unsw-nb15-dataset}
+
+{[}2{]} N. Moustafa and J. Slay, ``UNSW-NB15: a comprehensive data set
+for network intrusion detection systems (UNSW-NB15 network data set),''
+in \emph{Military Communications and Information Systems Conference
+(MilCIS)}, IEEE, 2015, pp.~1--6. DOI:
+\href{https://doi.org/10.1109/MilCIS.2015.7348942}{10.1109/MilCIS.2015.7348942}
+
+{[}3{]} N. Moustafa and J. Slay, ``The evaluation of Network Anomaly
+Detection Systems: Statistical analysis of the UNSW-NB15 data set and
+the comparison with the KDD99 data set,'' \emph{Information Security
+Journal: A Global Perspective}, vol.~25, no. 1--3, 2016, pp.~18--31.
+DOI:
+\href{https://doi.org/10.1080/19393555.2015.1125974}{10.1080/19393555.2015.1125974}
+
+{[}4{]} N. Moustafa, J. Slay, and G. Creech, ``Novel geometric area
+analysis technique for anomaly detection using trapezoidal area
+estimation on large-scale networks,'' \emph{IEEE Transactions on Big
+Data}, vol.~5, no. 4, 2019, pp.~481--494.
+
+{[}5{]} N. Moustafa, G. Creech, and J. Slay, ``Big data analytics for
+intrusion detection system: statistical decision-making using finite
+Dirichlet mixture models,'' in \emph{Data Analytics and Decision Support
+for Cybersecurity}, Springer, 2017, pp.~127--156.
+
+{[}6{]} M. Sarhan, S. Layeghy, N. Moustafa, and M. Portmann, ``NetFlow
+Datasets for Machine Learning-Based Network Intrusion Detection
+Systems,'' in \emph{Big Data Technologies and Applications
+(BDTA/WiCON)}, Springer Nature, 2020, p.~117.
+
+{[}7{]} M. A. Youssef, ``CALIBURN: Operationally Calibrated Streaming
+Intrusion Detection with Regime-Dependent Conformal Risk Control,''
+arXiv:2605.24696 (preprint).
+
+\textbf{Licence condition.} The UNSW-NB15 licence requires citing
+references {[}2{]} through {[}6{]}. References {[}3{]} to {[}6{]} are
+not referred to elsewhere in this report.
+
+\clearpage
+
+\section{Appendix A. Selected Hyperparameters}\label{sec-app-a}
+
+Every model's finalized configuration, collected in one place.
+\hyperref[sec-4]{Section 4} states each of these in the body text; they
+are gathered here because \hyperref[sec-4]{Sections 4.1 to 4.4} point at
+this appendix for the complete parameter set. Decision thresholds were
+selected on validation predictions by F1 maximization and locked before
+the frozen test set was evaluated (\hyperref[sec-5-2]{Section 5.2}). All
+four models used \texttt{random\_state\ =\ 42}.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1404}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5789}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1754}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1053}}@{}}
+\caption[Table A.1. Finalized hyperparameters and locked decision thresholds for the\ldots]{Table A.1. Finalized hyperparameters and locked decision
+thresholds for the four models.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Selected configuration
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Input features
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Locked threshold
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Selected configuration
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Input features
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Locked threshold
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Logistic Regression & \texttt{C\ =\ 100}, L1 penalty, \texttt{liblinear}
+solver, no class weighting. Final train-only refit used
+\texttt{max\_iter\ =\ 10000} and \texttt{tol\ =\ 0.0001}. & 66 (shared
+linear pipeline) & 0.463120 \\
+Neural Network (MLP) & Two hidden layers of 128 and 64 units, ReLU
+activation, Adam optimizer, \texttt{alpha\ =\ 0.0001}, learning rate
+0.0005, batch size 128, 28 epochs. Early stopping was used during tuning
+and disabled for the final refit. & 66 (shared linear pipeline) &
+0.345453 \\
+Random Forest & 800 trees, maximum depth 25, minimum leaf size 1,
+\texttt{max\_features\ =\ 0.3}, balanced class weighting, bootstrap
+sampling. & 39 (shared tree pipeline, TTL excluded) & 0.492968 \\
+XGBoost & 283 trees, maximum depth 10, learning rate 0.1,
+\texttt{min\_child\_weight\ =\ 1}, full row sampling,
+\texttt{colsample\_bytree\ =\ 0.6}, L1 and L2 regularization 1.0,
+histogram tree method, \texttt{binary:logistic} objective. & 39 (shared
+tree pipeline, TTL excluded) & 0.463061 \\
+\end{longtable}
+
+The tree models were fitted on the 39-predictor representation that
+excludes \texttt{sttl}, \texttt{dttl} and \texttt{ct\_state\_ttl}; the
+effect of restoring those columns is reported in
+\hyperref[sec-6-11]{Section 6.11}. The shared preprocessing artifacts
+that produce both representations are listed in
+\hyperref[sec-3-2]{Section 3.2}.
+
+\clearpage
+
+\section{Appendix B. Exploratory Analysis of the Published
+Partition}\label{sec-app-isaac}
+
+This appendix records the survey of the raw UNSW-NB15 files that the
+preprocessing decisions in \hyperref[sec-3-2]{Section 3.2} were made
+from. It is placed here rather than in the body because none of it is a
+result; it is the evidence behind three choices already described there.
+
+\subsection{B.1 Shape and Column Inventory}\label{sec-app-isaac-1}
+
+Both published files carry the same 45 columns: 42 predictors, the
+\texttt{label} target, the \texttt{attack\_cat} attack-family name, and
+the \texttt{id} row counter. \hyperref[sec-2-2]{Section 2.2} drops
+\texttt{attack\_cat} and \texttt{id}, leaving the 42 predictors used
+everywhere in this report.
+
+\begin{longtable}[]{@{}lrr@{}}
+\caption{Table B.1. Raw file dimensions, before any
+cleaning.}\tabularnewline
+\toprule\noalign{}
+Published file & Rows & Columns \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Published file & Rows & Columns \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Training & 175,341 & 45 \\
+Testing & 82,332 & 45 \\
+\end{longtable}
+
+Four columns hold text: \texttt{proto}, \texttt{service},
+\texttt{state}, and \texttt{attack\_cat}. The remaining 41 are numeric.
+Neither file reports a missing value in any column, which is why the
+fill rules in \hyperref[sec-2-3]{Section 2.3} are described there as
+guards against other UNSW-NB15 releases rather than as imputation this
+project needed.
+
+\subsection{B.2 Categorical Levels}\label{sec-app-isaac-2}
+
+The three categorical predictors differ sharply in width, and that
+difference is what the encoder configuration in
+\hyperref[sec-3-2]{Section 3.2} responds to.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.1325}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2289}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2169}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2169}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2048}}@{}}
+\caption[Table B.2. Categorical predictors in the raw files.]{Table B.2. Categorical predictors in the raw files. ``Only in
+testing'' counts levels that a preprocessor fitted on training data has
+never seen.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Column
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Levels (training)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Levels (testing)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Only in training
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Only in testing
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Column
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Levels (training)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Levels (testing)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Only in training
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Only in testing
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{proto} & 133 & 131 & 2 & 0 \\
+\texttt{service} & 13 & 13 & 0 & 0 \\
+\texttt{state} & 9 & 7 & 4 & 2 \\
+\end{longtable}
+
+Two rows of this table drive decisions made elsewhere.
+
+\texttt{proto} carries 133 levels, nearly all of them rare protocols
+appearing a handful of times. One-hot encoding it unfolded would add 133
+mostly-empty indicator columns, which is why \hyperref[sec-3-2]{Section
+3.2} folds infrequent levels together at a minimum frequency of 10 and a
+maximum of 30 categories per column.
+
+\texttt{state} has 2 levels that occur in the testing partition and
+never in training. A preprocessor fitted on training rows alone
+therefore \emph{must} be told what to do when it meets them, which is
+the reason for \texttt{handle\_\allowbreak{}unknown="infrequent\_\allowbreak{}if\_\allowbreak{}exist"} on the
+one-hot encoder and \texttt{unknown\_value=-1} on the ordinal encoder.
+Without those settings the frozen test set could not be transformed at
+all.
+
+The 13 \texttt{service} levels are \texttt{-}, \texttt{dhcp},
+\texttt{dns}, \texttt{ftp}, \texttt{ftp-data}, \texttt{http},
+\texttt{irc}, \texttt{pop3}, \texttt{radius}, \texttt{smtp},
+\texttt{snmp}, \texttt{ssh}, and \texttt{ssl}. The \texttt{-} level is a
+real observation meaning no application protocol was identified, not a
+missing value, and it is left as its own category.
+
+\subsection{\texorpdfstring{B.3 The \texttt{sttl} Distribution by
+Class}{B.3 The sttl Distribution by Class}}\label{sec-app-isaac-3}
+
+\hyperref[sec-2-5]{Section 2.5} rests on the claim that a single
+unlearned threshold on \texttt{sttl} separates the classes. The
+distribution behind that claim is below, over the raw training file.
+
+\begin{longtable}[]{@{}lrr@{}}
+\caption{Table B.3. Most frequent \texttt{sttl} values in the raw
+training file, by class.}\tabularnewline
+\toprule\noalign{}
+Class & \texttt{sttl} value & Rows \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Class & \texttt{sttl} value & Rows \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0 (normal) & 31 & 39,455 \\
+0 (normal) & 254 & 11,230 \\
+0 (normal) & 0 & 2,859 \\
+0 (normal) & 62 & 2,167 \\
+1 (attack) & 254 & 103,513 \\
+1 (attack) & 62 & 15,514 \\
+1 (attack) & 0 & 303 \\
+1 (attack) & 255 & 11 \\
+\end{longtable}
+
+The modal benign value, 31, does not appear in the attack class at all,
+and 254 accounts for the large majority of attack flows. The separation
+is not clean: 11,230 normal flows also carry 254, which is why the rule
+reaches 92.1\% rather than 100\%. That figure, and the decision it led
+to, are in \hyperref[sec-2-5]{Section 2.5}.
+
+\end{document}
